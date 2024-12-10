@@ -38,7 +38,7 @@ int main() {
     al_set_window_title(display, "Tela de Login");
 
     ALLEGRO_EVENT_QUEUE *event_queue = al_create_event_queue();
-    ALLEGRO_FONT *font = al_load_ttf_font("Adicionar fonte aqui", 32, 0);
+    ALLEGRO_FONT *font = al_load_ttf_font("./roboto/Roboto-Regular.ttf", 32, 0);
 
     if (!event_queue || !font) {
         fprintf(stderr, "Falha ao carregar recursos.\n");
