@@ -1,0 +1,1 @@
+gcc -o index index.c -lallegro -lallegro_font -lallegro_ttf -lallegro_primitives

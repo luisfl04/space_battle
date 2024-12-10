@@ -1,0 +1,1 @@
+// Verificar chat no gpt da coggit.
