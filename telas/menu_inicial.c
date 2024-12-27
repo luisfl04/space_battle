@@ -21,8 +21,6 @@ typedef struct retangulo{
     float b;
 } RETANGULO;
 
-
-
 // Inicialização dos botões do menu:
 static RETANGULO startButton = {100, 200, 300, 250};
 static RETANGULO toggleMusicButton = {100, 300, 350, 350};

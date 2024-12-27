@@ -9,7 +9,7 @@
 #define SCREEN_HEIGHT 600
 
 void save_username(const char *username) {
-    FILE *file = fopen("./extras/username.txt", "w");
+    FILE *file = fopen("./artefatos/username.txt", "w");
     if (file) {
         fprintf(file, "%s", username);
         fclose(file);
