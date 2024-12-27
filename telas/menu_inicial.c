@@ -5,7 +5,6 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_native_dialog.h>
-#include "cabecalhos/menu_inicial.h"
 
 static ALLEGRO_FONT *font = NULL;
 static ALLEGRO_SAMPLE *menuMusic = NULL;
@@ -45,11 +44,6 @@ static void menu_init() {
         al_play_sample(menuMusic, 1.0, 0.0,1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
         musicOn = true;
     }
-}
-
-// Atualizações feitas no menu:
-static void menu_update() {
-
 }
 
 // Carrega as ilustrações renderizadas no menu:

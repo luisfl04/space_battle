@@ -8,7 +8,7 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
-void save_username(const char *username) {
+void salvarUsername(const char *username) {
     FILE *file = fopen("./artefatos/username.txt", "w");
     if (file) {
         fprintf(file, "%s", username);
@@ -82,7 +82,7 @@ int iniciarTelaDeCadastro() {
 
         // Lógica para sair após Enter
         if (enter_pressed) {
-            save_username(username); // Salva o username
+            salvarUsername(username); // Salva o username
             printf("Username salvo: %s\n", username); // Feedback no terminal
             running = false; // Encerra o loop da tela de login
         }
