@@ -61,13 +61,7 @@ static void carregarMenuInicial() {
 
     // Prepara o fundo
     al_clear_to_color(al_map_rgb(0, 0, 0));
-
-    // Desenha o texto centralizado
-    const char *menuText = "Bem-vindo ao Jogo!";
-    int textWidth = al_get_text_width(fonte, menuText);
-    int textHeight = al_get_font_line_height(fonte);
-    al_draw_text(fonte, al_map_rgb(255, 255, 255), largura_janela / 2 - textWidth / 2, altura_janela / 2 - textHeight / 2, 0, menuText);
-
+    
     // Atualiza a tela
     al_flip_display();
     al_rest(14.0);

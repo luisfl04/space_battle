@@ -3,5 +3,10 @@ Anotações de requisitos que o game precisa cumprir:
 * Inicio do game:
     - Ao iniciar game, pedir nome do usuário -> Ok
     - Implementar menu inicial(Pause) com dois botões: Iniciar game e fechar -> 
+    - menu inicial deve renderizar nome do usuário e o seu maior record -> 
     - Menu de pause deve ter botão de desligar e ligar música
-    - Renderizar o nome do usuário e o seu record
+
+
+* Apresentação:
+    - Diagrama de caso de uso -> 
+    - Informação do número de dias que o game foi desenvolvido ->

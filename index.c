@@ -9,7 +9,6 @@ int main(int argc, char **argv){
     iniciarTelaDeCadastro();
 
     // Ao obter o username, incio o menu inicial:
-
     carregarMenuInicial();
 
 
