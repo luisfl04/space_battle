@@ -13,8 +13,8 @@ static ALLEGRO_FONT *fonte = NULL;
 static ALLEGRO_SAMPLE *menu_de_musica = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static bool musica_tocando = true;
-static int largura_janela = 800;
-static int altura_janela = 600;
+static int largura_janela = 1200;
+static int altura_janela = 720;
 
 
 static void carregarMenuInicial() {
@@ -62,11 +62,8 @@ static void carregarMenuInicial() {
         musica_tocando = true;
     }
 
-    // Prepara o fundo
+    // Prepara o fundo do menu com imagem:
     al_clear_to_color(al_map_rgb(0, 0, 0));
-    
-
-    // Carrega a imagem de fundo
     imagem_fundo = al_load_bitmap("./imagens/fundo_estrelas_menu_inicial.png");
     if (!imagem_fundo) {
         al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem de fundo", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
