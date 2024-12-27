@@ -6,127 +6,81 @@
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_native_dialog.h>
 
-static ALLEGRO_FONT *font = NULL;
-static ALLEGRO_SAMPLE *menuMusic = NULL;
-static bool musicOn = true;
-static int screenWidth = 800;
-static int screenHeight = 600;
+// Configurações básicas de inicialização da tela:
+static ALLEGRO_DISPLAY *display = NULL;
+static ALLEGRO_FONT *fonte = NULL;
+static ALLEGRO_SAMPLE *menu_de_musica = NULL;
+static bool musica_tocando = true;
+static int largura_janela = 800;
+static int altura_janela = 600;
 
-// Definindo a estrutura 'RETANGULO':
-typedef struct retangulo{
-    float l;
-    float t;
-    float r;
-    float b;
-} RETANGULO;
 
-// Inicialização dos botões do menu:
-static RETANGULO startButton = {100, 200, 300, 250};
-static RETANGULO toggleMusicButton = {100, 300, 350, 350};
-static RETANGULO quitButton = {100, 400, 250, 450};
+static void carregarMenuInicial() {
 
-// Criação inicial das configurações do menu:
-static void menu_init() {
-    // Carregando fonte:
-    font = al_load_ttf_font("./fonts/Roboto-Regular.ttf", 32, 0);
-    if(!font) {
-        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte", NULL, NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    /* Essa função é responsável por carregar o menu inicial do jogo que representa também o menu de pause. O usuário irá usá-la sempre que 
+    o game for pausado ou quando o game for iniciado pela primeira vez */
+
+    // Inicializando allegro:
+    if (!al_init()) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível inicializar o Allegro", NULL, NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return;
     }
 
-    // Carrega música
+    // Cria a janela com o tamanho especificado:
+    display = al_create_display(largura_janela, altura_janela);
+    if (!display) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível criar a janela", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        return;
+    }
+
+    // Inicializa addons necessários:
+    al_init_font_addon();
+    al_init_ttf_addon();
+    al_init_primitives_addon();
+    al_install_audio();
+    al_init_acodec_addon();
+
+    // Carregando fonte:
+    fonte = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 32, 0);
+    if (!fonte) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_destroy_display(display);
+        return;
+    }
+
+    // Carregando música:
     al_reserve_samples(1);
-    menuMusic = al_load_sample("./audio/menu_music.wav");
-    if(!menuMusic) {
-        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a música do menu", NULL, NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    menu_de_musica = al_load_sample("./audio/menu_music.wav");
+    if (!menu_de_musica) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a música do menu", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
     } else {
-        // Toca a música em loop
-        al_play_sample(menuMusic, 1.0, 0.0,1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
-        musicOn = true;
-    }
-}
-
-// Carrega as ilustrações renderizadas no menu:
-static void menu_draw() {
-
-    al_clear_to_color(al_map_rgb(50,50,50));
-
-    al_draw_text(font, al_map_rgb(255,255,255), screenWidth/2, 100, ALLEGRO_ALIGN_CENTER, "MENU / PAUSE");
-
-    // Desenha botão "Iniciar Jogo"
-    al_draw_filled_rectangle(startButton.l, startButton.t, startButton.r, startButton.b, al_map_rgb(100,100,200));
-    al_draw_text(font, al_map_rgb(255,255,255), (startButton.l+startButton.r)/2, (startButton.t+startButton.b)/2 -16, ALLEGRO_ALIGN_CENTER, "Iniciar Jogo");
-
-    // Desenha botão de toggle da música
-    al_draw_filled_rectangle(toggleMusicButton.l, toggleMusicButton.t, toggleMusicButton.r, toggleMusicButton.b, al_map_rgb(100,200,100));
-    const char *musicText = musicOn ? "Música: ON (clique)" : "Música: OFF (clique)";
-    al_draw_text(font, al_map_rgb(255,255,255), (toggleMusicButton.l+toggleMusicButton.r)/2, (toggleMusicButton.t+toggleMusicButton.b)/2 -16, ALLEGRO_ALIGN_CENTER, musicText);
-
-    // Desenha botão sair
-    al_draw_filled_rectangle(quitButton.l, quitButton.t, quitButton.r, quitButton.b, al_map_rgb(200,100,100));
-    al_draw_text(font, al_map_rgb(255,255,255), (quitButton.l+quitButton.r)/2, (quitButton.t+quitButton.b)/2 -16, ALLEGRO_ALIGN_CENTER, "Sair do Jogo");
-}
-
-// Função encarregada de 'destruir' os elementos que foram inicializados:
-static void menu_destroy() {
-    if (font) {
-        al_destroy_font(font);
-        font = NULL;
+        // Toca a música em loop:
+        al_play_sample(menu_de_musica, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
+        musica_tocando = true;
     }
 
-    if(menuMusic) {
-        al_destroy_sample(menuMusic);
-        menuMusic = NULL;
+    // Prepara o fundo
+    al_clear_to_color(al_map_rgb(0, 0, 0));
+
+    // Desenha o texto centralizado
+    const char *menuText = "Bem-vindo ao Jogo!";
+    int textWidth = al_get_text_width(fonte, menuText);
+    int textHeight = al_get_font_line_height(fonte);
+    al_draw_text(fonte, al_map_rgb(255, 255, 255), largura_janela / 2 - textWidth / 2, altura_janela / 2 - textHeight / 2, 0, menuText);
+
+    // Atualiza a tela
+    al_flip_display();
+    al_rest(14.0);
+
+    // Liberando recursos usados:
+    if (menu_de_musica) {
+        al_destroy_sample(menu_de_musica);
     }
-}
-
-// Função auxiliar para verificar clique dentro de um retângulo
-static bool is_point_in_rect(float x, float y, RETANGULO rect) {
-    return (x >= rect.l && x <= rect.r && y >= rect.t && y <= rect.b);
-}
-
-static void menu_handle_event(ALLEGRO_EVENT *event, Screen **currentScreen, Screen *gameScreen, bool *running) {
-    if(event->type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
-        float mx = event->mouse.x;
-        float my = event->mouse.y;
-
-        // Verifica se clicou no botão iniciar jogo
-        if(is_point_in_rect(mx, my, startButton)) {
-            // Troca para a tela do jogo
-            (*currentScreen)->destroy();
-            *currentScreen = gameScreen; 
-            (*currentScreen)->init();
-            return;
-        }
-
-        // Verifica se clicou no botão de toggle da música
-        if(is_point_in_rect(mx, my, toggleMusicButton)) {
-            if(musicOn) {
-                // Pausa a música
-                al_stop_samples();
-                musicOn = false;
-            } else {
-                // Retoma a música
-                al_play_sample(menuMusic, 1.0, 0.0,1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
-                musicOn = true;
-            }
-            return;
-        }
-
-        // Verifica se clicou no botão sair
-        if(is_point_in_rect(mx, my, quitButton)) {
-            // Sai do loop principal
-            *running = false;
-            return;
-        }
+    if (fonte) {
+        al_destroy_font(fonte);
     }
-}
+    if (display) {
+        al_destroy_display(display);
+    }
 
-// Inicialização da estrutura screen que lida com as fases que a tela renderiza:
-Screen MenuScreen = {
-    .init = menu_init,
-    .update = menu_update,
-    .draw = menu_draw,
-    .destroy = menu_destroy,
-    .handle_event = menu_handle_event // Esta função foi adicionada à struct Screen para lidar com eventos
-};
+}
