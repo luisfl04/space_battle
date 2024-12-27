@@ -5,11 +5,13 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_native_dialog.h>
+#include <allegro5/allegro_image.h>
 
 // Configurações básicas de inicialização da tela:
 static ALLEGRO_DISPLAY *display = NULL;
 static ALLEGRO_FONT *fonte = NULL;
 static ALLEGRO_SAMPLE *menu_de_musica = NULL;
+static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static bool musica_tocando = true;
 static int largura_janela = 800;
 static int altura_janela = 600;
@@ -39,6 +41,7 @@ static void carregarMenuInicial() {
     al_init_primitives_addon();
     al_install_audio();
     al_init_acodec_addon();
+    al_init_image_addon();
 
     // Carregando fonte:
     fonte = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 32, 0);
@@ -62,6 +65,16 @@ static void carregarMenuInicial() {
     // Prepara o fundo
     al_clear_to_color(al_map_rgb(0, 0, 0));
     
+
+    // Carrega a imagem de fundo
+    imagem_fundo = al_load_bitmap("./imagens/fundo_estrelas_menu_inicial.png");
+    if (!imagem_fundo) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem de fundo", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    } else {
+        // Desenha a imagem na tela
+        al_draw_bitmap(imagem_fundo, 0, 0, 0);
+    }
+
     // Atualiza a tela
     al_flip_display();
     al_rest(14.0);
