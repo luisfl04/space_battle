@@ -5,8 +5,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#define SCREEN_WIDTH 1200
-#define SCREEN_HEIGHT 720
+#define SCREEN_WIDTH 1366
+#define SCREEN_HEIGHT 768
 
 void salvarUsername(const char *username) {
     FILE *file = fopen("./artefatos/username.txt", "w");

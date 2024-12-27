@@ -13,8 +13,8 @@ static ALLEGRO_FONT *fonte = NULL;
 static ALLEGRO_SAMPLE *menu_de_musica = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static bool musica_tocando = true;
-static int largura_janela = 800;
-static int altura_janela = 600;
+static int largura_janela = 1366;
+static int altura_janela = 768;
 
 static void desenharBotao(float x, float y, float largura, float altura, const char *texto, ALLEGRO_COLOR cor_fundo, ALLEGRO_COLOR cor_texto) {
     /* Função responsável por renderizar os botões usados no menu inicial. Ela pode ser usada em outras implementações, visto que desenha os botões
@@ -44,6 +44,7 @@ static void carregarMenuInicial() {
         al_show_native_message_box(NULL, "Erro", "Não foi possível criar a janela", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return;
     }
+    al_set_window_title(display, "Menu inicial"); // Definindo titulo da janela
 
     // Inicializa addons necessários:
     al_init_font_addon();
