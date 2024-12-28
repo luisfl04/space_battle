@@ -9,7 +9,8 @@
 
 // Configurações básicas de inicialização da tela:
 static ALLEGRO_DISPLAY *display = NULL;
-static ALLEGRO_FONT *fonte = NULL;
+static ALLEGRO_FONT *fonte_geral = NULL;
+static ALLEGRO_FONT *fonte_mensagem_boas_vindas = NULL;
 static ALLEGRO_SAMPLE *menu_de_musica = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static ALLEGRO_BITMAP *imagem_nave = NULL;
@@ -23,9 +24,9 @@ static void desenharBotao(float x, float y, float largura, float altura, const c
     
     // Desenha os botões:
     al_draw_filled_rectangle(x, y, x + largura, y + altura, cor_fundo);
-    float texto_x = x + (largura - al_get_text_width(fonte, texto)) / 2;
-    float texto_y = y + (altura - al_get_font_line_height(fonte)) / 2;
-    al_draw_text(fonte, cor_texto, texto_x, texto_y, 0, texto);
+    float texto_x = x + (largura - al_get_text_width(fonte_geral, texto)) / 2;
+    float texto_y = y + (altura - al_get_font_line_height(fonte_geral)) / 2;
+    al_draw_text(fonte_geral, cor_texto, texto_x, texto_y, 0, texto);
 }
 
 static void carregarMenuInicial() {
@@ -61,10 +62,10 @@ static void carregarMenuInicial() {
     al_register_event_source(fila_eventos, al_get_display_event_source(display));
     al_register_event_source(fila_eventos, al_get_mouse_event_source());
 
-    // Carregando fonte:
-    fonte = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 32, 0);
-    if (!fonte) {
-        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    // Carregando fonte geral:
+    fonte_geral = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 48, 0);
+    if (!fonte_geral) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte geral", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_display(display);
         return;
     }
@@ -99,29 +100,38 @@ static void carregarMenuInicial() {
     desenharBotao(x_botoes, y_botao_iniciar, largura_botao, altura_botao, "Iniciar jogo", al_map_rgb(50, 150, 50), al_map_rgb(255, 255, 255));
     desenharBotao(x_botoes, y_botao_fechar, largura_botao, altura_botao, "Fechar", al_map_rgb(150, 50, 50), al_map_rgb(255, 255, 255));
 
+    // Desenhando mensagem de boas vindas:
+        
+        // Carregando a imagem da nave que é renderizada ao lado da mensagem de boas vindas:
+        imagem_nave = al_load_bitmap("./imagens/menu_inicial/destroyer.png");
+        if (!imagem_nave) {
+            al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem da nave", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        }
 
-    // Carregando a imagem da nave que é renderizada ao lado da mensagem de boas vindas:
-    imagem_nave = al_load_bitmap("./imagens/menu_inicial/destroyer_normal.png");
-    if (!imagem_nave) {
-        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem da nave", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
-    }
+        // Carregando a fonte:
+        fonte_mensagem_boas_vindas = al_load_ttf_font("./fonts/roboto/Roboto-Bold.ttf", 55, 0);
+        if (!fonte_mensagem_boas_vindas) {
+            al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte de boas vindas", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+            al_destroy_display(display);
+            return;
+        }
 
-    // Mensagem de boas-vindas
-    const char *mensagem = "Bem-vindo ao Space Game!";
-    float largura_mensagem = al_get_text_width(fonte, mensagem);
-    float altura_mensagem = al_get_font_line_height(fonte);
-    float x_mensagem = largura_janela / 4;
-    float y_mensagem = altura_janela / 4;
+        // Configurações da mensagem de boas vindas:
+        const char *mensagem = "Bem-vindo ao Space Game!";
+        float largura_mensagem = al_get_text_width(fonte_mensagem_boas_vindas, mensagem);
+        float altura_mensagem = al_get_font_line_height(fonte_mensagem_boas_vindas);
+        float x_mensagem = largura_janela / 4;
+        float y_mensagem = altura_janela / 4;
+        
+        // Desenhando a mensagem:
+        al_draw_text(fonte_mensagem_boas_vindas, al_map_rgb(255, 255, 255), x_mensagem , y_mensagem - 70, 0, mensagem);
 
-    al_draw_text(fonte, al_map_rgb(255, 255, 255), x_mensagem, y_mensagem, 0, mensagem);
-
-    // Desenha a imagem da nave ao lado do texto
-    if (imagem_nave) {
-        float largura_nave = al_get_bitmap_width(imagem_nave);
-        float altura_nave = al_get_bitmap_height(imagem_nave);
-        al_draw_bitmap(imagem_nave, x_mensagem + largura_mensagem + 20, y_mensagem - altura_nave / 4, 0);
-    }
-
+        // Desenha a imagem da nave ao lado do texto:
+        if (imagem_nave) {
+            float largura_nave = al_get_bitmap_width(imagem_nave);
+            float altura_nave = al_get_bitmap_height(imagem_nave);
+            al_draw_bitmap(imagem_nave, x_mensagem + largura_mensagem + 20, y_mensagem - altura_nave / 4, 0);
+        }
 
     // Atualiza a tela:
     al_flip_display();
@@ -150,8 +160,8 @@ static void carregarMenuInicial() {
     if (imagem_fundo) {
         al_destroy_bitmap(imagem_fundo);
     }
-    if (fonte) {
-        al_destroy_font(fonte);
+    if (fonte_geral) {
+        al_destroy_font(fonte_geral);
     }
     if (display) {
         al_destroy_display(display);
