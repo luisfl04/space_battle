@@ -9,7 +9,7 @@
 
 // Configurações básicas de inicialização da tela:
 static ALLEGRO_DISPLAY *display = NULL;
-static ALLEGRO_FONT *fonte = NULL;
+static ALLEGRO_FONT *fonte_geral = NULL;
 static ALLEGRO_SAMPLE *menu_de_musica = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static ALLEGRO_BITMAP *imagem_nave = NULL;
@@ -17,16 +17,22 @@ static bool musica_tocando = true;
 static int largura_janela = 1366;
 static int altura_janela = 768;
 
+static ALLEGRO_FONT* carregarFonte(int tamanho_da_fonte, char *caminho_da_fonte) {
+    /*Função responsável por carregar as fontes usadas no jogo*/ 
+    return al_load_ttf_font(caminho_da_fonte, tamanho_da_fonte, 0);
+}
+
 static void desenharBotao(float x, float y, float largura, float altura, const char *texto, ALLEGRO_COLOR cor_fundo, ALLEGRO_COLOR cor_texto) {
     /* Função responsável por renderizar os botões usados no menu inicial. Ela pode ser usada em outras implementações, visto que desenha os botões
     de acordo com o parâmetros passados. */
     
     // Desenha os botões:
     al_draw_filled_rectangle(x, y, x + largura, y + altura, cor_fundo);
-    float texto_x = x + (largura - al_get_text_width(fonte, texto)) / 2;
-    float texto_y = y + (altura - al_get_font_line_height(fonte)) / 2;
-    al_draw_text(fonte, cor_texto, texto_x, texto_y, 0, texto);
+    float texto_x = x + (largura - al_get_text_width(fonte_geral, texto)) / 2;
+    float texto_y = y + (altura - al_get_font_line_height(fonte_geral)) / 2;
+    al_draw_text(fonte_geral, cor_texto, texto_x, texto_y, 0, texto);
 }
+
 
 static void carregarMenuInicial() {
 
@@ -61,10 +67,10 @@ static void carregarMenuInicial() {
     al_register_event_source(fila_eventos, al_get_display_event_source(display));
     al_register_event_source(fila_eventos, al_get_mouse_event_source());
 
-    // Carregando fonte:
-    fonte = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 32, 0);
-    if (!fonte) {
-        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    // Carregando fonte_geral usada no jogo:
+    fonte_geral = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 48, 0);
+    if (!fonte_geral) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte_geral", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_display(display);
         return;
     }
@@ -101,27 +107,26 @@ static void carregarMenuInicial() {
 
 
     // Carregando a imagem da nave que é renderizada ao lado da mensagem de boas vindas:
-    imagem_nave = al_load_bitmap("./imagens/menu_inicial/destroyer_normal.png");
+    imagem_nave = al_load_bitmap("./imagens/menu_inicial/destroyer.png");
     if (!imagem_nave) {
         al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem da nave", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
     }
 
-    // Mensagem de boas-vindas
+    // Configuração da mensagem de boas-vindas que é renderizada acima dos botões no menu inicial:
     const char *mensagem = "Bem-vindo ao Space Game!";
-    float largura_mensagem = al_get_text_width(fonte, mensagem);
-    float altura_mensagem = al_get_font_line_height(fonte);
+    float largura_mensagem = al_get_text_width(fonte_geral, mensagem);
+    float altura_mensagem = al_get_font_line_height(fonte_geral);
     float x_mensagem = largura_janela / 4;
-    float y_mensagem = altura_janela / 4;
+    float y_mensagem = altura_janela / 6;
+    // Desenha a mensagem:
+    al_draw_text(fonte_geral, al_map_rgb(255, 255, 255), x_mensagem, y_mensagem, 0, mensagem);
 
-    al_draw_text(fonte, al_map_rgb(255, 255, 255), x_mensagem, y_mensagem, 0, mensagem);
-
-    // Desenha a imagem da nave ao lado do texto
+    // Desenha a imagem da nave ao lado do texto:
     if (imagem_nave) {
         float largura_nave = al_get_bitmap_width(imagem_nave);
         float altura_nave = al_get_bitmap_height(imagem_nave);
         al_draw_bitmap(imagem_nave, x_mensagem + largura_mensagem + 20, y_mensagem - altura_nave / 4, 0);
     }
-
 
     // Atualiza a tela:
     al_flip_display();
@@ -150,8 +155,8 @@ static void carregarMenuInicial() {
     if (imagem_fundo) {
         al_destroy_bitmap(imagem_fundo);
     }
-    if (fonte) {
-        al_destroy_font(fonte);
+    if (fonte_geral) {
+        al_destroy_font(fonte_geral);
     }
     if (display) {
         al_destroy_display(display);
