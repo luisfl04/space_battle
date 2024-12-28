@@ -79,10 +79,8 @@ static void carregarMenuInicial() {
         musica_tocando = true;
     }
 
-    // Prepara o fundo
+    // Prepara o fundo e carrega a imagem com estrelas sobre o fundo:
     al_clear_to_color(al_map_rgb(0, 0, 0));
-
-    // Carrega a imagem de fundo
     imagem_fundo = al_load_bitmap("./imagens/fundo_estrelas_menu_inicial.png");
     if (!imagem_fundo) {
         al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem de fundo", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
@@ -91,19 +89,19 @@ static void carregarMenuInicial() {
         al_draw_bitmap(imagem_fundo, 0, 0, 0);
     }
 
-    // Botões
+    // Configurando os botões e os desenhando na tela:
     float largura_botao = 200;
     float altura_botao = 50;
     float x_botao = largura_janela / 2 - largura_botao / 2;
     float y_botao_iniciar = altura_janela / 2 - altura_botao - 10;
     float y_botao_fechar = altura_janela / 2 + 10;
-
-    desenharBotao(x_botao, y_botao_iniciar, largura_botao, altura_botao, "Iniciar Game", al_map_rgb(50, 150, 50), al_map_rgb(255, 255, 255));
+    desenharBotao(x_botao, y_botao_iniciar, largura_botao, altura_botao, "Iniciar jogo", al_map_rgb(50, 150, 50), al_map_rgb(255, 255, 255));
     desenharBotao(x_botao, y_botao_fechar, largura_botao, altura_botao, "Fechar", al_map_rgb(150, 50, 50), al_map_rgb(255, 255, 255));
 
-    // Atualiza a tela
+    // Atualiza a tela:
     al_flip_display();
 
+    // Loop principal do menu que espera por uma ação do usuário, seja ela iniciar o game, fechá-lo ou desativar e ativar música:
     bool sair = false;
     while (!sair) {
         ALLEGRO_EVENT evento;
@@ -120,7 +118,7 @@ static void carregarMenuInicial() {
         }
     }
 
-    // Liberando recursos usados:
+    // Ao fechar loop, libero os recursos usados:
     if (menu_de_musica) {
         al_destroy_sample(menu_de_musica);
     }
