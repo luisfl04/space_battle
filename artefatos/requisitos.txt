@@ -3,7 +3,8 @@ Anotações de requisitos que o game precisa cumprir:
 * Inicio do game:
     - Ao iniciar game, pedir nome do usuário -> Ok
     - Implementar menu inicial(Pause) com dois botões: Iniciar game e fechar -> Ok
-    - Menu inicial deve ser mensagem de boas vindas com o nome do game.... ->
+    - Menu inicial deve ser mensagem de boas vindas com o nome do game.... -> Ok
+    - Imagem da nave ficará ao lado do texto de boas vindas em tamanho proporcional e organizado -> 
     - menu inicial deve renderizar nome do usuário e o seu maior record -> 
     - Menu de pause deve ter botão de desligar e ligar música -> 
 
