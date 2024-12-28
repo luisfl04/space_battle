@@ -12,6 +12,7 @@ static ALLEGRO_DISPLAY *display = NULL;
 static ALLEGRO_FONT *fonte = NULL;
 static ALLEGRO_SAMPLE *menu_de_musica = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
+static ALLEGRO_BITMAP *imagem_nave = NULL;
 static bool musica_tocando = true;
 static int largura_janela = 1366;
 static int altura_janela = 768;
@@ -54,7 +55,7 @@ static void carregarMenuInicial() {
     al_init_acodec_addon();
     al_init_image_addon();
 
-    // Configuração de eventos
+    // Configuração de eventos:
     ALLEGRO_EVENT_QUEUE *fila_eventos = al_create_event_queue();
     al_install_mouse();
     al_register_event_source(fila_eventos, al_get_display_event_source(display));
@@ -81,7 +82,7 @@ static void carregarMenuInicial() {
 
     // Prepara o fundo e carrega a imagem com estrelas sobre o fundo:
     al_clear_to_color(al_map_rgb(0, 0, 0));
-    imagem_fundo = al_load_bitmap("./imagens/fundo_estrelas_menu_inicial.png");
+    imagem_fundo = al_load_bitmap("./imagens/menu_inicial/fundo_estrelas_menu_inicial.png");
     if (!imagem_fundo) {
         al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem de fundo", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
     } else {
@@ -97,6 +98,30 @@ static void carregarMenuInicial() {
     float y_botao_fechar = altura_janela / 2 + 10;
     desenharBotao(x_botoes, y_botao_iniciar, largura_botao, altura_botao, "Iniciar jogo", al_map_rgb(50, 150, 50), al_map_rgb(255, 255, 255));
     desenharBotao(x_botoes, y_botao_fechar, largura_botao, altura_botao, "Fechar", al_map_rgb(150, 50, 50), al_map_rgb(255, 255, 255));
+
+
+    // Carregando a imagem da nave que é renderizada ao lado da mensagem de boas vindas:
+    imagem_nave = al_load_bitmap("./imagens/menu_inicial/destroyer_normal.png");
+    if (!imagem_nave) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem da nave", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    }
+
+    // Mensagem de boas-vindas
+    const char *mensagem = "Bem-vindo ao Space Game!";
+    float largura_mensagem = al_get_text_width(fonte, mensagem);
+    float altura_mensagem = al_get_font_line_height(fonte);
+    float x_mensagem = largura_janela / 4;
+    float y_mensagem = altura_janela / 4;
+
+    al_draw_text(fonte, al_map_rgb(255, 255, 255), x_mensagem, y_mensagem, 0, mensagem);
+
+    // Desenha a imagem da nave ao lado do texto
+    if (imagem_nave) {
+        float largura_nave = al_get_bitmap_width(imagem_nave);
+        float altura_nave = al_get_bitmap_height(imagem_nave);
+        al_draw_bitmap(imagem_nave, x_mensagem + largura_mensagem + 20, y_mensagem - altura_nave / 4, 0);
+    }
+
 
     // Atualiza a tela:
     al_flip_display();
