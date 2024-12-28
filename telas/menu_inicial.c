@@ -90,13 +90,13 @@ static void carregarMenuInicial() {
     }
 
     // Configurando os botões e os desenhando na tela:
-    float largura_botao = 200;
-    float altura_botao = 50;
-    float x_botao = largura_janela / 2 - largura_botao / 2;
+    float largura_botao = 380;
+    float altura_botao = 90;
+    float x_botoes = largura_janela / 2 - largura_botao / 2;
     float y_botao_iniciar = altura_janela / 2 - altura_botao - 10;
     float y_botao_fechar = altura_janela / 2 + 10;
-    desenharBotao(x_botao, y_botao_iniciar, largura_botao, altura_botao, "Iniciar jogo", al_map_rgb(50, 150, 50), al_map_rgb(255, 255, 255));
-    desenharBotao(x_botao, y_botao_fechar, largura_botao, altura_botao, "Fechar", al_map_rgb(150, 50, 50), al_map_rgb(255, 255, 255));
+    desenharBotao(x_botoes, y_botao_iniciar, largura_botao, altura_botao, "Iniciar jogo", al_map_rgb(50, 150, 50), al_map_rgb(255, 255, 255));
+    desenharBotao(x_botoes, y_botao_fechar, largura_botao, altura_botao, "Fechar", al_map_rgb(150, 50, 50), al_map_rgb(255, 255, 255));
 
     // Atualiza a tela:
     al_flip_display();
@@ -110,7 +110,7 @@ static void carregarMenuInicial() {
         if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
             sair = true;
         } else if (evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-            if (evento.mouse.x >= x_botao && evento.mouse.x <= x_botao + largura_botao) {
+            if (evento.mouse.x >= x_botoes && evento.mouse.x <= x_botoes + largura_botao) {
                 if (evento.mouse.y >= y_botao_fechar && evento.mouse.y <= y_botao_fechar + altura_botao) {
                     sair = true; // Fechar programa
                 }
