@@ -29,6 +29,7 @@ static void desenharBotao(float x, float y, float largura, float altura, const c
     al_draw_text(fonte_geral, cor_texto, texto_x, texto_y, 0, texto);
 }
 
+
 static void carregarMenuInicial() {
 
     /* Essa função é responsável por carregar o menu inicial do jogo que representa também o menu de pause. O usuário irá usá-la sempre que 
