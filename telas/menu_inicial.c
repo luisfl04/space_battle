@@ -29,7 +29,6 @@ static void desenharBotao(float x, float y, float largura, float altura, const c
     al_draw_text(fonte_geral, cor_texto, texto_x, texto_y, 0, texto);
 }
 
-
 static void carregarMenuInicial() {
 
     /* Essa função é responsável por carregar o menu inicial do jogo que representa também o menu de pause. O usuário irá usá-la sempre que 
@@ -127,11 +126,15 @@ static void carregarMenuInicial() {
         // Desenhando a mensagem:
         al_draw_text(fonte_mensagem_boas_vindas, al_map_rgb(255, 255, 255), x_mensagem , y_mensagem - 70, 0, mensagem);
 
-        // Desenha a imagem da nave ao lado do texto:
+        // Redimensiona e desenha a imagem da nave ao lado do texto
         if (imagem_nave) {
-            float largura_nave = al_get_bitmap_width(imagem_nave);
-            float altura_nave = al_get_bitmap_height(imagem_nave);
-            al_draw_bitmap(imagem_nave, x_mensagem + largura_mensagem + 20, y_mensagem - altura_nave / 4, 0);
+            ALLEGRO_BITMAP *nave_redimensionada = al_create_bitmap(altura_mensagem, altura_mensagem);
+            ALLEGRO_BITMAP *anterior = al_get_target_bitmap();
+            al_set_target_bitmap(nave_redimensionada);
+            al_draw_scaled_bitmap(imagem_nave, 0, 0, al_get_bitmap_width(imagem_nave), al_get_bitmap_height(imagem_nave), 0, 0, altura_mensagem, altura_mensagem, 0);
+            al_set_target_bitmap(anterior);
+            al_draw_bitmap(nave_redimensionada, x_mensagem + largura_mensagem + 20, y_mensagem, 0);
+            al_destroy_bitmap(nave_redimensionada);
         }
 
     // Atualiza a tela:
@@ -161,8 +164,14 @@ static void carregarMenuInicial() {
     if (imagem_fundo) {
         al_destroy_bitmap(imagem_fundo);
     }
+    if (imagem_nave) {
+        al_destroy_bitmap(imagem_nave);
+    }
     if (fonte_geral) {
         al_destroy_font(fonte_geral);
+    }
+    if (fonte_mensagem_boas_vindas) {
+        al_destroy_font(fonte_mensagem_boas_vindas);
     }
     if (display) {
         al_destroy_display(display);
