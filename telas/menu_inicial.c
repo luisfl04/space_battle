@@ -6,17 +6,44 @@
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_image.h>
+#include <stdio.h>
+#include <string.h>
+
 
 // Configurações básicas de inicialização da tela:
 static ALLEGRO_DISPLAY *display = NULL;
 static ALLEGRO_FONT *fonte_geral = NULL;
 static ALLEGRO_FONT *fonte_mensagem_boas_vindas = NULL;
+static ALLEGRO_FONT *fonte_rendereizacao_usuario = NULL;
 static ALLEGRO_SAMPLE *menu_de_musica = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static ALLEGRO_BITMAP *imagem_nave = NULL;
 static bool musica_tocando = true;
 static int largura_janela = 1366;
 static int altura_janela = 768;
+
+// Função para ler o nome do usuário a partir do arquivo
+static void obter_nome_usuario(char *nome, size_t tamanho) {
+    FILE *arquivo = fopen("./artefatos/username.txt", "r");
+    if (arquivo) {
+        fgets(nome, tamanho, arquivo);
+        nome[strcspn(nome, "\n")] = 0; // Remove o caractere de nova linha, se existir
+        fclose(arquivo);
+    } else {
+        strncpy(nome, "Usuário Desconhecido", tamanho);
+    }
+}
+
+// Função para ler o record do usuário a partir do arquivo
+static int obter_record_usuario() {
+    FILE *arquivo = fopen("./artefatos/record.txt", "r");
+    int record = 0;
+    if (arquivo) {
+        fscanf(arquivo, "%d", &record);
+        fclose(arquivo);
+    }
+    return record;
+}
 
 static void desenharBotao(float x, float y, float largura, float altura, const char *texto, ALLEGRO_COLOR cor_fundo, ALLEGRO_COLOR cor_texto) {
     /* Função responsável por renderizar os botões usados no menu inicial. Ela pode ser usada em outras implementações, visto que desenha os botões
@@ -137,6 +164,29 @@ static void carregarMenuInicial() {
             al_destroy_bitmap(nave_redimensionada);
         }
 
+    // Desenhando o nome do usuário e o record:
+
+        // Configurando as fontes:
+        fonte_rendereizacao_usuario = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 35, 0);
+        if (!fonte_rendereizacao_usuario) {
+            al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte geral", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+            al_destroy_display(display);
+            return;
+        }
+
+        // Desenhando o nome do usuário e o record:
+        char nome_usuario[128];
+        obter_nome_usuario(nome_usuario, sizeof(nome_usuario));
+        int record_usuario = obter_record_usuario();
+        char texto_usuario[256];
+        snprintf(texto_usuario, sizeof(texto_usuario), "Usuário: %s\nRecord: %d", nome_usuario, record_usuario);
+        float x_usuario = largura_janela - 700 - al_get_text_width(fonte_geral, texto_usuario);
+        float y_usuario = 575;
+        al_draw_multiline_text(fonte_rendereizacao_usuario, al_map_rgb(255, 255, 255), x_usuario, y_usuario, largura_janela - 20, altura_mensagem, ALLEGRO_ALIGN_RIGHT, texto_usuario);
+
+
+
+
     // Atualiza a tela:
     al_flip_display();
 
@@ -169,6 +219,9 @@ static void carregarMenuInicial() {
     }
     if (fonte_geral) {
         al_destroy_font(fonte_geral);
+    }
+    if (fonte_rendereizacao_usuario) {
+        al_destroy_font(fonte_rendereizacao_usuario);
     }
     if (fonte_mensagem_boas_vindas) {
         al_destroy_font(fonte_mensagem_boas_vindas);
