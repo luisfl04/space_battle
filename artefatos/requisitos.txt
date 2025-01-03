@@ -1,5 +1,8 @@
 Anotações de requisitos que o game precisa cumprir:
 
+* Tela de cadastro:
+    - Implementar imagem de fundo na tela de cadastro -> 
+
 * Inicio do game:
     - Ao iniciar game, pedir nome do usuário -> Ok
     - Implementar menu inicial(Pause) com dois botões: Iniciar game e fechar -> Ok
@@ -7,7 +10,11 @@ Anotações de requisitos que o game precisa cumprir:
     - Imagem da nave ficará ao lado do texto de boas vindas em tamanho proporcional e organizado -> OK
     - menu inicial deve renderizar nome do usuário e o seu maior record -> Ok
     - Menu de pause deve ter botão de desligar e ligar música -> OK
-    - Implementar lógica que alterna entre menu de pause e o game em sí -> 
+    - Implementar lógica que alterna entre menu de pause e o game em sí -> OK
+
+* Game:
+    - Implementar imagem de fundo e renderização da imagem da nave -> 
+
 
 * Apresentação:
     - Diagrama de caso de uso -> 

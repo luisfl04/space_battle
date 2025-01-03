@@ -1,4 +1,5 @@
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_image.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_native_dialog.h>
@@ -6,17 +7,16 @@
 
 // Variáveis globais
 static ALLEGRO_DISPLAY *display_game = NULL;
-static ALLEGRO_FONT *fonte_game = NULL;
+static ALLEGRO_BITMAP *imagem_fundo = NULL;
 
-// Função para carregar a tela do jogo
 void carregarTelaJogo() {
+    // Inicialização do Allegro
     if (!al_init()) {
         al_show_native_message_box(NULL, "Erro", "Não foi possível inicializar o Allegro", NULL, NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return;
     }
 
-    al_init_font_addon();
-    al_init_ttf_addon();
+    al_init_image_addon();
     al_install_keyboard();
 
     // Cria a janela do jogo
@@ -27,44 +27,44 @@ void carregarTelaJogo() {
     }
     al_set_window_title(display_game, "Tela do Jogo");
 
-    // Carregando fonte
-    fonte_game = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 48, 0);
-    if (!fonte_game) {
-        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    // Carrega a imagem de fundo
+    imagem_fundo = al_load_bitmap("./imagens/fundo.png");
+    if (!imagem_fundo) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem de fundo", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_display(display_game);
         return;
     }
 
-    // Configuração de eventos
+    // Loop principal do jogo
     ALLEGRO_EVENT_QUEUE *fila_eventos = al_create_event_queue();
-    al_install_keyboard();
     al_register_event_source(fila_eventos, al_get_display_event_source(display_game));
     al_register_event_source(fila_eventos, al_get_keyboard_event_source());
 
-    // Renderiza a mensagem
-    al_clear_to_color(al_map_rgb(0, 0, 0));
-    al_draw_text(fonte_game, al_map_rgb(255, 255, 255), 1366 / 2, 768 / 2 - 50, ALLEGRO_ALIGN_CENTER, "Bem-vindo ao jogo!");
-    al_draw_text(fonte_game, al_map_rgb(255, 255, 255), 1366 / 2, 768 / 2 + 50, ALLEGRO_ALIGN_CENTER, "Pressione ESC para voltar ao menu");
-    al_flip_display();
-
-    // Loop principal do jogo
     bool sair = false;
     while (!sair) {
         ALLEGRO_EVENT evento;
-        al_wait_for_event(fila_eventos, &evento);
+        al_clear_to_color(al_map_rgb(0, 0, 0)); // Fundo preto
 
+        // Renderiza a imagem de fundo
+        if (imagem_fundo) {
+            al_draw_bitmap(imagem_fundo, 0, 0, 0); // Desenha a imagem na posição (0, 0)
+        }
+
+        al_flip_display();
+
+        al_wait_for_event(fila_eventos, &evento);
         if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
             sair = true;
         } else if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
             if (evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
-                sair = true; // Voltar ao menu
+                sair = true; // Retornar ao menu
             }
         }
     }
 
-    // Libera recursos
-    if (fonte_game) {
-        al_destroy_font(fonte_game);
+    // Liberação de recursos
+    if (imagem_fundo) {
+        al_destroy_bitmap(imagem_fundo);
     }
     if (display_game) {
         al_destroy_display(display_game);
