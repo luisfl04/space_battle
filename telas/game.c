@@ -112,9 +112,9 @@ void carregarTelaJogo() {
     }
 
     bool sair = false;
-    bool tecla_cima = false, tecla_baixo = false, tecla_a = false, tecla_d = false;
+    bool tecla_cima = false, tecla_baixo = false, tecla_esquerda = false, tecla_direita = false;
 
-    // Loop principal do jogo
+    // Modificar o controle das teclas no loop de eventos
     while (!sair) {
         ALLEGRO_EVENT evento;
         while (al_get_next_event(fila_eventos, &evento)) {
@@ -123,26 +123,26 @@ void carregarTelaJogo() {
             } else if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
                 if (evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
                     sair = true; // Retornar ao menu
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_W) {
-                    tecla_cima = true;
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_S) {
-                    tecla_baixo = true;
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_A) {
-                    tecla_a = true;
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_D) {
-                    tecla_d = true;
+                } else if (evento.keyboard.keycode == ALLEGRO_KEY_UP) {
+                    tecla_cima = true; // Setas para cima para mover para frente
+                } else if (evento.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+                    tecla_baixo = true; // Setas para baixo para mover para trás
+                } else if (evento.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+                    tecla_esquerda = true; // Setas para esquerda para rotacionar para a esquerda
+                } else if (evento.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+                    tecla_direita = true; // Setas para direita para rotacionar para a direita
                 } else if (evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
-                    disparar_tiro(posicao_x_nave, posicao_y_nave, angulo_nave);
+                    disparar_tiro(posicao_x_nave, posicao_y_nave, angulo_nave); // Disparo da nave
                 }
             } else if (evento.type == ALLEGRO_EVENT_KEY_UP) {
-                if (evento.keyboard.keycode == ALLEGRO_KEY_W) {
+                if (evento.keyboard.keycode == ALLEGRO_KEY_UP) {
                     tecla_cima = false;
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_S) {
+                } else if (evento.keyboard.keycode == ALLEGRO_KEY_DOWN) {
                     tecla_baixo = false;
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_A) {
-                    tecla_a = false;
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_D) {
-                    tecla_d = false;
+                } else if (evento.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+                    tecla_esquerda = false;
+                } else if (evento.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+                    tecla_direita = false;
                 }
             }
         }
@@ -156,12 +156,27 @@ void carregarTelaJogo() {
             posicao_x_nave -= cos(angulo_nave) * VELOCIDADE_NAVE;
             posicao_y_nave -= sin(angulo_nave) * VELOCIDADE_NAVE;
         }
-        if (tecla_a) {
-            angulo_nave -= VELOCIDADE_ROTACAO;
+
+        // Limita a posição da nave para que ela não ultrapasse os limites da tela
+        if (posicao_x_nave - largura_nave / 2 < 0) {
+            posicao_x_nave = largura_nave / 2; // Limite esquerdo
+        } else if (posicao_x_nave + largura_nave / 2 > LARGURA_TELA) {
+            posicao_x_nave = LARGURA_TELA - largura_nave / 2; // Limite direito
         }
-        if (tecla_d) {
-            angulo_nave += VELOCIDADE_ROTACAO;
+
+        if (posicao_y_nave - altura_nave / 2 < 0) {
+            posicao_y_nave = altura_nave / 2; // Limite superior
+        } else if (posicao_y_nave + altura_nave / 2 > ALTURA_TELA) {
+            posicao_y_nave = ALTURA_TELA - altura_nave / 2; // Limite inferior
         }
+
+        if (tecla_esquerda) {
+            angulo_nave -= VELOCIDADE_ROTACAO; // Rotação para a esquerda
+        }
+        if (tecla_direita) {
+            angulo_nave += VELOCIDADE_ROTACAO; // Rotação para a direita
+        }
+
 
         // Atualiza a posição dos tiros
         for (int i = 0; i < MAX_TIROS; i++) {
@@ -187,7 +202,7 @@ void carregarTelaJogo() {
         // Renderiza a nave redimensionada e rotacionada
         if (nave_redimensionada) {
             al_draw_rotated_bitmap(nave_redimensionada, largura_nave / 2, altura_nave / 2,
-                                   posicao_x_nave, posicao_y_nave, angulo_nave, 0);
+                                posicao_x_nave, posicao_y_nave, angulo_nave, 0);
         }
 
         // Renderiza os tiros
@@ -197,8 +212,11 @@ void carregarTelaJogo() {
             }
         }
 
-        al_flip_display();
+        al_flip_display();  
+        
     }
+
+
 
     // Liberação de recursos
     if (imagem_fundo) {
