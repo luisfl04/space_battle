@@ -16,11 +16,42 @@ static ALLEGRO_FONT *fonte_geral = NULL;
 static ALLEGRO_FONT *fonte_mensagem_boas_vindas = NULL;
 static ALLEGRO_FONT *fonte_rendereizacao_usuario = NULL;
 static ALLEGRO_SAMPLE *menu_de_musica = NULL;
+static ALLEGRO_SAMPLE_ID musica_id;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static ALLEGRO_BITMAP *imagem_nave = NULL;
+static ALLEGRO_BITMAP *icone_musica_ligada = NULL;
+static ALLEGRO_BITMAP *icone_musica_desligada = NULL;
 static bool musica_tocando = true;
 static int largura_janela = 1366;
 static int altura_janela = 768;
+
+
+// Função para alternar o estado da música
+static void alternar_musica() {
+    if (musica_tocando) {
+        al_stop_sample(&musica_id);
+        musica_tocando = false;
+    } else {
+        al_play_sample(menu_de_musica, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, &musica_id);
+        musica_tocando = true;
+    }
+}
+
+// Função para desenhar o botão de música
+static void desenhar_botao_musica(float x, float y, float largura, float altura) {
+    // Limpa a área do botão para evitar sobreposição
+    al_draw_filled_rectangle(x, y, x + largura, y + altura, al_map_rgb(0, 0, 0));
+
+    ALLEGRO_BITMAP *icone = musica_tocando ? icone_musica_ligada : icone_musica_desligada;
+    if (icone) {
+        al_draw_scaled_bitmap(icone, 0, 0, al_get_bitmap_width(icone), al_get_bitmap_height(icone), x, y, largura, altura, 0);
+    } else {
+        // Caso o ícone não seja carregado, desenha um botão simples
+        al_draw_filled_rectangle(x, y, x + largura, y + altura, al_map_rgb(200, 200, 200));
+        const char *texto = musica_tocando ? "Música: Ligada" : "Música: Mutada";
+        al_draw_text(fonte_geral, al_map_rgb(0, 0, 0), x + largura / 2, y + altura / 4, ALLEGRO_ALIGN_CENTER, texto);
+    }
+}
 
 // Função para ler o nome do usuário a partir do arquivo
 static void obter_nome_usuario(char *nome, size_t tamanho) {
@@ -108,6 +139,15 @@ static void carregarMenuInicial() {
         musica_tocando = true;
     }
 
+    // Carregando os ícones do botão de alternar música:
+    icone_musica_ligada = al_load_bitmap("./imagens/menu_inicial/sound_on.png");
+    icone_musica_desligada = al_load_bitmap("./imagens/menu_inicial/sound_off.png");
+    if(!icone_musica_ligada || !icone_musica_desligada) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar os ícones do botão de musica", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    }
+
+
+
     // Prepara o fundo e carrega a imagem com estrelas sobre o fundo:
     al_clear_to_color(al_map_rgb(0, 0, 0));
     imagem_fundo = al_load_bitmap("./imagens/menu_inicial/fundo_estrelas_menu_inicial.png");
@@ -126,6 +166,13 @@ static void carregarMenuInicial() {
     float y_botao_fechar = altura_janela / 2 + 10;
     desenharBotao(x_botoes, y_botao_iniciar, largura_botao, altura_botao, "Iniciar jogo", al_map_rgb(50, 150, 50), al_map_rgb(255, 255, 255));
     desenharBotao(x_botoes, y_botao_fechar, largura_botao, altura_botao, "Fechar", al_map_rgb(150, 50, 50), al_map_rgb(255, 255, 255));
+
+    // Botão de música no canto inferior direito
+    float largura_botao_musica = 64;
+    float altura_botao_musica = 64;
+    float x_botao_musica = largura_janela - largura_botao_musica - 100;
+    float y_botao_musica = altura_janela - altura_botao_musica - 100;
+    desenhar_botao_musica(x_botao_musica, y_botao_musica, largura_botao_musica, altura_botao_musica);
 
     // Desenhando mensagem de boas vindas:
         
@@ -184,9 +231,6 @@ static void carregarMenuInicial() {
         float y_usuario = 575;
         al_draw_multiline_text(fonte_rendereizacao_usuario, al_map_rgb(255, 255, 255), x_usuario, y_usuario, largura_janela - 20, altura_mensagem, ALLEGRO_ALIGN_RIGHT, texto_usuario);
 
-
-
-
     // Atualiza a tela:
     al_flip_display();
 
@@ -202,6 +246,14 @@ static void carregarMenuInicial() {
             if (evento.mouse.x >= x_botoes && evento.mouse.x <= x_botoes + largura_botao) {
                 if (evento.mouse.y >= y_botao_fechar && evento.mouse.y <= y_botao_fechar + altura_botao) {
                     sair = true; // Fechar programa
+                }
+            }
+        // Verifica se clicou no botão de música
+            if (evento.mouse.x >= x_botao_musica && evento.mouse.x <= x_botao_musica + largura_botao_musica) {
+                if (evento.mouse.y >= y_botao_musica && evento.mouse.y <= y_botao_musica + altura_botao_musica) {
+                    alternar_musica();
+                    desenhar_botao_musica(x_botao_musica, y_botao_musica, largura_botao_musica, altura_botao_musica);
+                    al_flip_display();
                 }
             }
         }
@@ -229,5 +281,12 @@ static void carregarMenuInicial() {
     if (display) {
         al_destroy_display(display);
     }
+    if (icone_musica_ligada) {
+        al_destroy_bitmap(icone_musica_ligada);
+    }
+    if (icone_musica_desligada) {
+        al_destroy_bitmap(icone_musica_desligada);
+    }
+
     al_destroy_event_queue(fila_eventos);
 }
