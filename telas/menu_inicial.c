@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
+extern void carregarTelaJogo();
 
 // Configurações básicas de inicialização da tela:
 static ALLEGRO_DISPLAY *display = NULL;
@@ -235,7 +236,9 @@ static void carregarMenuInicial() {
     al_flip_display();
 
     // Loop principal do menu que espera por uma ação do usuário, seja ela iniciar o game, fechá-lo ou desativar e ativar música:
+    
     bool sair = false;
+    bool iniciar_jogo = false;
     while (!sair) {
         ALLEGRO_EVENT evento;
         al_wait_for_event(fila_eventos, &evento);
@@ -246,6 +249,10 @@ static void carregarMenuInicial() {
             if (evento.mouse.x >= x_botoes && evento.mouse.x <= x_botoes + largura_botao) {
                 if (evento.mouse.y >= y_botao_fechar && evento.mouse.y <= y_botao_fechar + altura_botao) {
                     sair = true; // Fechar programa
+                }
+                if (evento.mouse.y >= y_botao_iniciar && evento.mouse.y <= y_botao_iniciar + altura_botao) {
+                    iniciar_jogo = true; // Alterna para a tela do jogo
+                    sair = true;
                 }
             }
         // Verifica se clicou no botão de música
@@ -286,6 +293,10 @@ static void carregarMenuInicial() {
     }
     if (icone_musica_desligada) {
         al_destroy_bitmap(icone_musica_desligada);
+    }
+    if (iniciar_jogo) {
+        carregarTelaJogo(); // Alterna para a tela do jogo
+        carregarMenuInicial(); // Volta ao menu quando a tela de jogo termina
     }
 
     al_destroy_event_queue(fila_eventos);
