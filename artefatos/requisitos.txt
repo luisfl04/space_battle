@@ -13,7 +13,8 @@ Anotações de requisitos que o game precisa cumprir:
     - Implementar lógica que alterna entre menu de pause e o game em sí -> OK
 
 * Game:
-    - Implementar imagem de fundo e renderização da imagem da nave -> 
+    - Implementar imagem de fundo e renderização da imagem da nave -> Ok
+    
 
 
 * Apresentação:
