@@ -6,9 +6,12 @@
 #include <allegro5/allegro_primitives.h>
 #include <stdio.h>
 #include <math.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
 
 
 // Variáveis globais
+static ALLEGRO_SAMPLE *audio_disparo = NULL; // Variável para armazenar o áudio de disparo
 static ALLEGRO_DISPLAY *display_game = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static ALLEGRO_BITMAP *imagem_nave = NULL;
@@ -35,6 +38,11 @@ static Tiro tiros[MAX_TIROS];
 
 // Função para disparar um tiro
 void disparar_tiro(float x, float y, float angulo) {
+    // Reproduz o áudio de disparo
+    if (audio_disparo) {
+        al_play_sample(audio_disparo, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+    }
+
     for (int i = 0; i < MAX_TIROS; i++) {
         if (!tiros[i].ativo) {
             tiros[i].x = x;
@@ -46,12 +54,11 @@ void disparar_tiro(float x, float y, float angulo) {
         }
     }
 }
-
 // Função principal da tela de jogo
 void carregarTelaJogo() {
     // Inicialização do Allegro
     if (!al_init()) {
-        al_show_native_message_box(NULL, "Erro", "Não foi possível inicializar o Allegro", NULL, NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(NULL, "Erro", "Não foi possível inicializar o Allegro", " ", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return;
     }
 
@@ -59,10 +66,35 @@ void carregarTelaJogo() {
     al_install_keyboard();
     al_init_primitives_addon();
 
+    // Inicializa o sistema de áudio
+    if (!al_install_audio()) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível inicializar o sistema de áudio", " ", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        return;
+    }
+
+    // Inicializa os codecs de áudio
+    if (!al_init_acodec_addon()) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível inicializar o codec de áudio", " ", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        return;
+    }
+
+    // Instala o driver de áudio
+    if (!al_reserve_samples(1)) { // Reservando 1 canal para o áudio
+        al_show_native_message_box(NULL, "Erro", "Não foi possível inicializar o driver de áudio", " ", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        return;
+    }
+
+    // Carregar o áudio de disparo
+    audio_disparo = al_load_sample("./audio/disparo.wav"); // Carrega o áudio de disparo
+    if (!audio_disparo) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar o áudio de disparo", " ", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        return;
+    }
+
     // Criação da janela do jogo
     display_game = al_create_display(LARGURA_TELA, ALTURA_TELA);
     if (!display_game) {
-        al_show_native_message_box(NULL, "Erro", "Não foi possível criar a janela do jogo", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(NULL, "Erro", "Não foi possível criar a janela do jogo", " ", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return;
     }
     al_set_window_title(display_game, "Space Battle - Jogo");
@@ -211,9 +243,10 @@ void carregarTelaJogo() {
                 al_draw_filled_circle(tiros[i].x, tiros[i].y, 5, al_map_rgb(255, 255, 0));
             }
         }
-
-        al_flip_display();  
         
+        // Atualizando tela:
+        al_flip_display();  
+        al_rest(0.01);
     }
 
 
