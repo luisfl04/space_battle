@@ -36,6 +36,10 @@ typedef struct {
 #define MAX_TIROS 10
 static Tiro tiros[MAX_TIROS];
 
+// Variáveis para pontuação
+static int pontuacao = 0;
+static time_t tempo_inicial;
+
 // Função para disparar um tiro
 void disparar_tiro(float x, float y, float angulo) {
     // Reproduz o áudio de disparo
@@ -54,6 +58,26 @@ void disparar_tiro(float x, float y, float angulo) {
         }
     }
 }
+
+// Função para salvar o record no arquivo
+void salvar_record(int pontuacao_atual) {
+    FILE *arquivo = fopen("./artefatos/record.txt", "r");
+    int record_atual = 0;
+
+    if (arquivo) {
+        fscanf(arquivo, "%d", &record_atual);
+        fclose(arquivo);
+    }
+
+    if (pontuacao_atual > record_atual) {
+        arquivo = fopen("./artefatos/record.txt", "w");
+        if (arquivo) {
+            fprintf(arquivo, "%d", pontuacao_atual);
+            fclose(arquivo);
+        }
+    }
+}
+
 // Função principal da tela de jogo
 void carregarTelaJogo() {
     // Inicialização do Allegro
@@ -146,6 +170,11 @@ void carregarTelaJogo() {
     bool sair = false;
     bool tecla_cima = false, tecla_baixo = false, tecla_esquerda = false, tecla_direita = false;
 
+    // Inicializa o tempo inicial
+    tempo_inicial = time(NULL);
+    time_t ultimo_tempo = tempo_inicial;
+
+
     // Modificar o controle das teclas no loop de eventos
     while (!sair) {
         ALLEGRO_EVENT evento;
@@ -222,6 +251,13 @@ void carregarTelaJogo() {
                 }
             }
         }
+        
+        // Atualiza o tempo e pontuação
+        time_t tempo_atual = time(NULL);
+        if (tempo_atual - ultimo_tempo >= 5) {
+            pontuacao += 1;
+            ultimo_tempo = tempo_atual;
+        }
 
         // Renderização
         al_clear_to_color(al_map_rgb(0, 0, 0)); // Fundo preto
@@ -237,6 +273,11 @@ void carregarTelaJogo() {
                                 posicao_x_nave, posicao_y_nave, angulo_nave, 0);
         }
 
+        // Renderiza pontuação
+        char texto_pontuacao[50];
+        snprintf(texto_pontuacao, sizeof(texto_pontuacao), "Pontuação: %d", pontuacao);
+        al_draw_text(al_create_builtin_font(), al_map_rgb(255, 255, 255), 10, 10, 0, texto_pontuacao);
+
         // Renderiza os tiros
         for (int i = 0; i < MAX_TIROS; i++) {
             if (tiros[i].ativo) {
@@ -249,7 +290,9 @@ void carregarTelaJogo() {
         al_rest(0.01);
     }
 
-
+    // Salvando pontuação obtida:
+    salvar_record(pontuacao);
+    printf("Pontuação obtida -> %d \n", pontuacao); // debug
 
     // Liberação de recursos
     if (imagem_fundo) {
