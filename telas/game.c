@@ -76,6 +76,10 @@ void salvar_record(int pontuacao_atual) {
             fclose(arquivo);
         }
     }
+    else{
+        // Se a pontuação nao foi record, descarto ela:
+        pontuacao = 0;
+    }
 }
 
 // Função principal da tela de jogo
