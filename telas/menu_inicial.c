@@ -27,6 +27,14 @@ static int largura_janela = 1366;
 static int altura_janela = 768;
 
 
+void zerar_record() {
+    FILE *arquivo = fopen("./artefatos/record.txt", "w");
+    if (arquivo) {
+        fprintf(arquivo, "%d", 0);
+        fclose(arquivo);
+    }
+}
+
 // Função para alternar o estado da música
 static void alternar_musica() {
     if (musica_tocando) {
@@ -249,6 +257,7 @@ static void carregarMenuInicial() {
             if (evento.mouse.x >= x_botoes && evento.mouse.x <= x_botoes + largura_botao) {
                 if (evento.mouse.y >= y_botao_fechar && evento.mouse.y <= y_botao_fechar + altura_botao) {
                     sair = true; // Fechar programa
+                    zerar_record(); // Zerando o record quando o jogo terminar.
                 }
                 if (evento.mouse.y >= y_botao_iniciar && evento.mouse.y <= y_botao_iniciar + altura_botao) {
                     iniciar_jogo = true; // Alterna para a tela do jogo

@@ -16,6 +16,8 @@ static ALLEGRO_DISPLAY *display_game = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static ALLEGRO_BITMAP *imagem_nave = NULL;
 static ALLEGRO_BITMAP *nave_redimensionada = NULL;
+static ALLEGRO_BITMAP *imagem_fundo_pause = NULL;
+
 
 // Dimensões da tela
 static const int LARGURA_TELA = 1366;
@@ -58,6 +60,8 @@ void disparar_tiro(float x, float y, float angulo) {
         }
     }
 }
+
+
 
 // Função para salvar o record no arquivo
 void salvar_record(int pontuacao_atual) {
@@ -220,11 +224,20 @@ void carregarTelaJogo() {
             }
         }
 
+        // Renderiza mensagem de pausa:
         if (pausado) {
-            // Renderiza mensagem de pausa
+            // Carregando fonte:
+            ALLEGRO_FONT *fonte_pausa = al_load_ttf_font("./fonts/roboto/Roboto-Medium.ttf", 48, 0);
+            if (!fonte_pausa) {
+                al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte para pausa", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+                return;
+            }
+            // Renderizando:
             al_clear_to_color(al_map_rgb(0, 0, 0)); // Fundo preto
-            al_draw_text(al_create_builtin_font(), al_map_rgb(255, 255, 255), LARGURA_TELA / 2, ALTURA_TELA / 2,
-                         ALLEGRO_ALIGN_CENTER, "PAUSADO - Pressione P para continuar");
+            imagem_fundo_pause = al_load_bitmap("./imagens/fundo.png");
+            al_draw_bitmap(imagem_fundo_pause, 0, 0, 0);
+            al_draw_text(fonte_pausa, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, ALTURA_TELA / 2,
+                        ALLEGRO_ALIGN_CENTER, "PAUSADO - Pressione P para continuar");
             al_flip_display();
             al_rest(0.1); // Reduz a carga de CPU enquanto pausado
             continue; // Salta o resto do loop
@@ -326,5 +339,6 @@ void carregarTelaJogo() {
     if (display_game) {
         al_destroy_display(display_game);
     }
-    al_destroy_event_queue(fila_eventos);
+
+    al_destroy_event_queue(fila_eventos); // Destruindo fila de eventos.
 }
