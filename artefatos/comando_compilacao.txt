@@ -1,2 +1,2 @@
-gcc -o index index.c ./telas/game.c -lallegro -lallegro_font -lallegro_ttf -lallegro_primitives -lallegro_audio -lallegro_acodec -lallegro_dialog -lallegro_image
+gcc -o index index.c ./telas/game.c -lallegro -lallegro_font -lallegro_ttf -lallegro_primitives -lallegro_audio -lallegro_acodec -lallegro_dialog -lallegro_image -lm
 

@@ -174,6 +174,8 @@ void carregarTelaJogo() {
     tempo_inicial = time(NULL);
     time_t ultimo_tempo = tempo_inicial;
 
+    // Variável para rastrear o estado de pausa
+    bool pausado = false;
 
     // Modificar o controle das teclas no loop de eventos
     while (!sair) {
@@ -184,28 +186,44 @@ void carregarTelaJogo() {
             } else if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
                 if (evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
                     sair = true; // Retornar ao menu
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_UP) {
-                    tecla_cima = true; // Setas para cima para mover para frente
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_DOWN) {
-                    tecla_baixo = true; // Setas para baixo para mover para trás
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-                    tecla_esquerda = true; // Setas para esquerda para rotacionar para a esquerda
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-                    tecla_direita = true; // Setas para direita para rotacionar para a direita
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
-                    disparar_tiro(posicao_x_nave, posicao_y_nave, angulo_nave); // Disparo da nave
+                } else if (evento.keyboard.keycode == ALLEGRO_KEY_P) {
+                    pausado = !pausado; // Alterna entre pausado e em execução
+                } else if (!pausado) { // Somente processa controles se não estiver pausado
+                    if (evento.keyboard.keycode == ALLEGRO_KEY_UP) {
+                        tecla_cima = true; // Setas para cima para mover para frente
+                    } else if (evento.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+                        tecla_baixo = true; // Setas para baixo para mover para trás
+                    } else if (evento.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+                        tecla_esquerda = true; // Setas para esquerda para rotacionar para a esquerda
+                    } else if (evento.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+                        tecla_direita = true; // Setas para direita para rotacionar para a direita
+                    } else if (evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+                        disparar_tiro(posicao_x_nave, posicao_y_nave, angulo_nave); // Disparo da nave
+                    }
                 }
             } else if (evento.type == ALLEGRO_EVENT_KEY_UP) {
-                if (evento.keyboard.keycode == ALLEGRO_KEY_UP) {
-                    tecla_cima = false;
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_DOWN) {
-                    tecla_baixo = false;
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_LEFT) {
-                    tecla_esquerda = false;
-                } else if (evento.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
-                    tecla_direita = false;
+                if (!pausado) { // Apenas processa quando não está pausado
+                    if (evento.keyboard.keycode == ALLEGRO_KEY_UP) {
+                        tecla_cima = false;
+                    } else if (evento.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+                        tecla_baixo = false;
+                    } else if (evento.keyboard.keycode == ALLEGRO_KEY_LEFT) {
+                        tecla_esquerda = false;
+                    } else if (evento.keyboard.keycode == ALLEGRO_KEY_RIGHT) {
+                        tecla_direita = false;
+                    }
                 }
             }
+        }
+
+        if (pausado) {
+            // Renderiza mensagem de pausa
+            al_clear_to_color(al_map_rgb(0, 0, 0)); // Fundo preto
+            al_draw_text(al_create_builtin_font(), al_map_rgb(255, 255, 255), LARGURA_TELA / 2, ALTURA_TELA / 2,
+                         ALLEGRO_ALIGN_CENTER, "PAUSADO - Pressione P para continuar");
+            al_flip_display();
+            al_rest(0.1); // Reduz a carga de CPU enquanto pausado
+            continue; // Salta o resto do loop
         }
 
         // Atualiza a posição e ângulo da nave
