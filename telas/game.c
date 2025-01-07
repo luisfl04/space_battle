@@ -1,3 +1,4 @@
+// Libs usadas:
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_font.h>
@@ -8,83 +9,163 @@
 #include <math.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
+#include <stdlib.h>
 
+
+// Constantes usadas:
+#define MAX_INIMIGOS 100
+#define MAX_TIROS 10
+#define LARGURA_TELA 1366
+#define ALTURA_TELA 768
+
+// Estruturas usadas:
+    // Estrutura para um inimigo:
+    typedef struct {
+        float x, y;       // Posição
+        float dx, dy;     // Direção do movimento
+        bool ativo;       // Estado do inimigo
+    } Inimigo;
+
+    // Estrutura para um tiro
+    typedef struct {
+        float x, y;
+        float dx, dy; // Direção do movimento
+        bool ativo;
+    } Tiro;
 
 // Variáveis globais
-static ALLEGRO_SAMPLE *audio_disparo = NULL; // Variável para armazenar o áudio de disparo
+static ALLEGRO_SAMPLE *audio_disparo = NULL; 
 static ALLEGRO_DISPLAY *display_game = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static ALLEGRO_BITMAP *imagem_nave = NULL;
 static ALLEGRO_BITMAP *nave_redimensionada = NULL;
 static ALLEGRO_BITMAP *imagem_fundo_pause = NULL;
-
-
-// Dimensões da tela
-static const int LARGURA_TELA = 1366;
-static const int ALTURA_TELA = 768;
-
-// Velocidade da nave e da rotação
-static const float VELOCIDADE_NAVE = 5.0;
-static const float VELOCIDADE_ROTACAO = 0.05; // Em radianos
-
-// Estrutura para um tiro
-typedef struct {
-    float x, y;
-    float dx, dy; // Direção do movimento
-    bool ativo;
-} Tiro;
-
-// Array de tiros
-#define MAX_TIROS 10
 static Tiro tiros[MAX_TIROS];
-
-// Variáveis para pontuação
+static Inimigo inimigos[MAX_INIMIGOS];
+static ALLEGRO_BITMAP *imagem_inimigo = NULL;
+static int quantidade_inimigos = 1;
+static bool sair = false;
+static bool pausado = false;
 static int pontuacao = 0;
-static time_t tempo_inicial;
 
-// Função para disparar um tiro
-void disparar_tiro(float x, float y, float angulo) {
-    // Reproduz o áudio de disparo
-    if (audio_disparo) {
-        al_play_sample(audio_disparo, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-    }
+// Configurações gerais:
 
-    for (int i = 0; i < MAX_TIROS; i++) {
-        if (!tiros[i].ativo) {
-            tiros[i].x = x;
-            tiros[i].y = y;
-            tiros[i].dx = cos(angulo) * 10; // Velocidade do tiro na direção X
-            tiros[i].dy = sin(angulo) * 10; // Velocidade do tiro na direção Y
-            tiros[i].ativo = true;
-            break;
+    // Velocidade da nave e da rotação
+    static const float VELOCIDADE_NAVE = 5.0;
+    static const float VELOCIDADE_ROTACAO = 0.05; // Em radianos
+
+    // Variáveis para pontuação
+    static time_t tempo_inicial;
+
+// Funções gerais usadas no game:
+
+    // Função para disparar um tiro
+    void disparar_tiro(float x, float y, float angulo) {
+        // Reproduz o áudio de disparo
+        if (audio_disparo) {
+            al_play_sample(audio_disparo, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+        }
+
+        for (int i = 0; i < MAX_TIROS; i++) {
+            if (!tiros[i].ativo) {
+                tiros[i].x = x;
+                tiros[i].y = y;
+                tiros[i].dx = cos(angulo) * 10; // Velocidade do tiro na direção X
+                tiros[i].dy = sin(angulo) * 10; // Velocidade do tiro na direção Y
+                tiros[i].ativo = true;
+                break;
+            }
         }
     }
-}
 
+    // Função para salvar o record no arquivo
+    void salvar_record(int pontuacao_atual) {
+        FILE *arquivo = fopen("./artefatos/record.txt", "r");
+        int record_atual = 0;
 
-
-// Função para salvar o record no arquivo
-void salvar_record(int pontuacao_atual) {
-    FILE *arquivo = fopen("./artefatos/record.txt", "r");
-    int record_atual = 0;
-
-    if (arquivo) {
-        fscanf(arquivo, "%d", &record_atual);
-        fclose(arquivo);
-    }
-
-    if (pontuacao_atual > record_atual) {
-        arquivo = fopen("./artefatos/record.txt", "w");
         if (arquivo) {
-            fprintf(arquivo, "%d", pontuacao_atual);
+            fscanf(arquivo, "%d", &record_atual);
             fclose(arquivo);
         }
+
+        if (pontuacao_atual > record_atual) {
+            arquivo = fopen("./artefatos/record.txt", "w");
+            if (arquivo) {
+                fprintf(arquivo, "%d", pontuacao_atual);
+                fclose(arquivo);
+            }
+        }
+        else{
+            // Se a pontuação nao foi record, descarto ela:
+            pontuacao = 0;
+        }
     }
-    else{
-        // Se a pontuação nao foi record, descarto ela:
-        pontuacao = 0;
+
+    // Função para inicializar os inimigos
+    void inicializar_inimigos() {
+        for (int i = 0; i < MAX_INIMIGOS; i++) {
+            inimigos[i].ativo = false;
+        }
+        imagem_inimigo = al_load_bitmap("./imagens/game/inimigo.png");
+        if (!imagem_inimigo) {
+            al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem do inimigo", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+            exit(1);
+        }
     }
-}
+
+    // Função para criar inimigos
+    void criar_inimigos() {
+        for (int i = 0; i < quantidade_inimigos && i < MAX_INIMIGOS; i++) {
+            if (!inimigos[i].ativo) {
+                inimigos[i].x = rand() % LARGURA_TELA; // Posição aleatória no eixo X
+                inimigos[i].y = rand() % ALTURA_TELA; // Posição aleatória no eixo Y
+                inimigos[i].ativo = true;
+
+                // Define a velocidade inicial
+                inimigos[i].dx = 0;
+                inimigos[i].dy = 0;
+            }
+        }
+        quantidade_inimigos++; // Incrementa a quantidade de inimigos para a próxima onda
+    }
+
+    // Função para mover inimigos em direção à nave
+    void mover_inimigos(float posicao_x_nave, float posicao_y_nave, float largura_inimigo, float altura_inimigo) {
+        for (int i = 0; i < MAX_INIMIGOS; i++) {
+            if (inimigos[i].ativo) {
+                float direcao_x = posicao_x_nave - inimigos[i].x;
+                float direcao_y = posicao_y_nave - inimigos[i].y;
+                float magnitude = sqrt(direcao_x * direcao_x + direcao_y * direcao_y);
+
+                // Normaliza a direção e define velocidade
+                if (magnitude > 0) {
+                    inimigos[i].dx = (direcao_x / magnitude) * 2; // Velocidade fixa de 2
+                    inimigos[i].dy = (direcao_y / magnitude) * 2;
+                }
+
+                inimigos[i].x += inimigos[i].dx;
+                inimigos[i].y += inimigos[i].dy;
+
+                // Verifica colisão com a nave
+                if (fabs(inimigos[i].x - posicao_x_nave) < largura_inimigo &&
+                    fabs(inimigos[i].y - posicao_y_nave) < altura_inimigo) {
+                    printf("Colisão com inimigo! Fim de jogo.\n");
+                    sair = true;
+                }
+            }
+        }
+    }
+
+    // Função para renderizar os inimigos
+    void renderizar_inimigos(float largura_inimigo, float altura_inimigo) {
+        for (int i = 0; i < MAX_INIMIGOS; i++) {
+            if (inimigos[i].ativo) {
+                al_draw_scaled_bitmap(imagem_inimigo, 0, 0, al_get_bitmap_width(imagem_inimigo),
+                                    al_get_bitmap_height(imagem_inimigo), inimigos[i].x, inimigos[i].y,
+                                    largura_inimigo, altura_inimigo, 0);
+            }
+        }
+    }
 
 // Função principal da tela de jogo
 void carregarTelaJogo() {
@@ -94,6 +175,7 @@ void carregarTelaJogo() {
         return;
     }
 
+    // Addons necessários:
     al_init_image_addon();
     al_install_keyboard();
     al_init_primitives_addon();
@@ -148,11 +230,13 @@ void carregarTelaJogo() {
         return;
     }
 
-    // Redimensiona a nave para um tamanho proporcional
+    // Inicializando inimigos:
+    inicializar_inimigos();
+
+    // Redimensiona a nave para um tamanho proporcional:
     float largura_nave = LARGURA_TELA * 0.1; // 10% da largura da tela
     float proporcao_nave = largura_nave / al_get_bitmap_width(imagem_nave); // Calcula proporção
     float altura_nave = al_get_bitmap_height(imagem_nave) * proporcao_nave;
-
     nave_redimensionada = al_create_bitmap(largura_nave, altura_nave);
     ALLEGRO_BITMAP *anterior = al_get_target_bitmap();
     al_set_target_bitmap(nave_redimensionada);
@@ -175,15 +259,13 @@ void carregarTelaJogo() {
         tiros[i].ativo = false;
     }
 
-    bool sair = false;
+    // Variáveis de controle das teclas pressionadas:
     bool tecla_cima = false, tecla_baixo = false, tecla_esquerda = false, tecla_direita = false;
 
-    // Inicializa o tempo inicial
+    // Variáveis de controle do tempo no game:
     tempo_inicial = time(NULL);
     time_t ultimo_tempo = tempo_inicial;
-
-    // Variável para rastrear o estado de pausa
-    bool pausado = false;
+    time_t tempo_ultimo_inimigo = time(NULL);
 
     // Modificar o controle das teclas no loop de eventos
     while (!sair) {
@@ -243,6 +325,15 @@ void carregarTelaJogo() {
             continue; // Salta o resto do loop
         }
 
+        // Atualiza inimigos a cada 5 segundos
+        if (difftime(time(NULL), tempo_ultimo_inimigo) >= 5) {
+            criar_inimigos();
+            tempo_ultimo_inimigo = time(NULL);
+        }
+        // Movimento dos inimigos
+        mover_inimigos(posicao_x_nave, posicao_y_nave, largura_nave / 2, altura_nave / 2);
+
+
         // Atualiza a posição e ângulo da nave
         if (tecla_cima) {
             posicao_x_nave += cos(angulo_nave) * VELOCIDADE_NAVE;
@@ -301,7 +392,8 @@ void carregarTelaJogo() {
         if (imagem_fundo) {
             al_draw_bitmap(imagem_fundo, 0, 0, 0);
         }
-
+        renderizar_inimigos(largura_nave / 2, altura_nave / 2); // Renderiza inimigos
+        
         // Renderiza a nave redimensionada e rotacionada
         if (nave_redimensionada) {
             al_draw_rotated_bitmap(nave_redimensionada, largura_nave / 2, altura_nave / 2,
@@ -320,6 +412,7 @@ void carregarTelaJogo() {
             }
         }
         
+
         // Atualizando tela:
         al_flip_display();  
         al_rest(0.01);
