@@ -51,6 +51,8 @@
 
 - Implementação de menu de pause
 
+![tela do game](./artefatos/imagens/game.png)
+
 ### Loop de eventos principal do game:
 
 ![loop principal](./artefatos/imagens/funcao_principal.png)
