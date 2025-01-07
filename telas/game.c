@@ -37,6 +37,7 @@
 static ALLEGRO_SAMPLE *audio_disparo = NULL; 
 static ALLEGRO_SAMPLE *audio_game_over = NULL;
 static ALLEGRO_SAMPLE *audio_inimigo_abatido = NULL;
+static ALLEGRO_SAMPLE_ID *audio_inimigo_abatido_id = NULL;
 static ALLEGRO_DISPLAY *display_game = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static ALLEGRO_BITMAP *imagem_nave = NULL;
@@ -208,7 +209,7 @@ static int pontuacao = 0;
 
                             // Toca o som de explosão
                             if (audio_inimigo_abatido) {
-                                al_play_sample(audio_inimigo_abatido, 1.0, 0.0, 2.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                                al_play_sample(audio_inimigo_abatido, 1.0, 0.0, 2.0, ALLEGRO_PLAYMODE_ONCE, audio_inimigo_abatido_id);
                             }
 
                             // Incrementa a pontuação
@@ -249,7 +250,7 @@ void carregarTelaJogo() {
     }
 
     // Instala o driver de áudio
-    if (!al_reserve_samples(1)) { // Reservando 1 canal para o áudio
+    if (!al_reserve_samples(10)) { // Reservando 1 canal para o áudio
         al_show_native_message_box(NULL, "Erro", "Não foi possível inicializar o driver de áudio", " ", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return;
     }
