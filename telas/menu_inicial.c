@@ -16,6 +16,7 @@ static ALLEGRO_DISPLAY *display = NULL;
 static ALLEGRO_FONT *fonte_geral = NULL;
 static ALLEGRO_FONT *fonte_mensagem_boas_vindas = NULL;
 static ALLEGRO_FONT *fonte_rendereizacao_usuario = NULL;
+static ALLEGRO_FONT *fonte_rendereizacao_valores_usuario = NULL;
 static ALLEGRO_SAMPLE *menu_de_musica = NULL;
 static ALLEGRO_SAMPLE_ID musica_id;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
@@ -25,6 +26,8 @@ static ALLEGRO_BITMAP *icone_musica_desligada = NULL;
 static bool musica_tocando = true;
 static int largura_janela = 1366;
 static int altura_janela = 768;
+static bool hover_iniciar = NULL;
+static bool hover_fechar = NULL;  
 
 
 void zerar_record() {
@@ -85,16 +88,32 @@ static int obter_record_usuario() {
     return record;
 }
 
-static void desenharBotao(float x, float y, float largura, float altura, const char *texto, ALLEGRO_COLOR cor_fundo, ALLEGRO_COLOR cor_texto) {
-    /* Função responsável por renderizar os botões usados no menu inicial. Ela pode ser usada em outras implementações, visto que desenha os botões
-    de acordo com o parâmetros passados. */
-    
-    // Desenha os botões:
-    al_draw_filled_rectangle(x, y, x + largura, y + altura, cor_fundo);
-    float texto_x = x + (largura - al_get_text_width(fonte_geral, texto)) / 2;
-    float texto_y = y + (altura - al_get_font_line_height(fonte_geral)) / 2;
-    al_draw_text(fonte_geral, cor_texto, texto_x, texto_y, 0, texto);
+// Função para desenhar botão com bordas arredondadas e sombras
+void desenharBotaoComEstilo(float x, float y, float largura, float altura, const char *texto, ALLEGRO_COLOR cor_fundo, ALLEGRO_COLOR cor_texto, bool hover) {
+    // Cores dinâmicas para hover
+    ALLEGRO_COLOR cor_sombra = al_map_rgb(20, 20, 20); // Sombra mais escura
+    ALLEGRO_COLOR cor_borda = hover ? al_map_rgb(255, 255, 255) : al_map_rgb(100, 100, 100); // Bordas brilhantes no hover
+    ALLEGRO_COLOR cor_fundo_hover = hover ? al_map_rgb(70, 180, 70) : cor_fundo; // Fundo mais brilhante no hover
+
+    // Desenhar sombra (leve deslocamento para criar profundidade)
+    al_draw_filled_rounded_rectangle(x + 4, y + 4, x + largura + 4, y + altura + 4, 10, 10, cor_sombra);
+
+    // Desenhar botão principal com bordas arredondadas
+    al_draw_filled_rounded_rectangle(x, y, x + largura, y + altura, 10, 10, cor_fundo_hover);
+
+    // Desenhar borda do botão
+    al_draw_rounded_rectangle(x, y, x + largura, y + altura, 10, 10, cor_borda, 3);
+
+    // Desenhar texto no centro do botão
+    ALLEGRO_FONT *fonte_botao = al_load_ttf_font("./fonts/roboto/Roboto-Bold.ttf", 24, 0);
+    if (fonte_botao) {
+        float largura_texto = al_get_text_width(fonte_botao, texto);
+        float altura_texto = al_get_font_line_height(fonte_botao);
+        al_draw_text(fonte_botao, cor_texto, x + largura / 2 - largura_texto / 2, y + altura / 2 - altura_texto / 2, 0, texto);
+        al_destroy_font(fonte_botao);
+    }
 }
+
 
 static void carregarMenuInicial() {
 
@@ -171,8 +190,30 @@ static void carregarMenuInicial() {
     float x_botoes = largura_janela / 2 - largura_botao / 2;
     float y_botao_iniciar = altura_janela / 2 - altura_botao - 10;
     float y_botao_fechar = altura_janela / 2 + 10;
-    desenharBotao(x_botoes, y_botao_iniciar, largura_botao, altura_botao, "Iniciar jogo", al_map_rgb(50, 150, 50), al_map_rgb(255, 255, 255));
-    desenharBotao(x_botoes, y_botao_fechar, largura_botao, altura_botao, "Fechar", al_map_rgb(150, 50, 50), al_map_rgb(255, 255, 255));
+
+    // Botão "Iniciar Jogo" com hover estilizado
+    desenharBotaoComEstilo(
+        x_botoes, 
+        y_botao_iniciar, 
+        largura_botao, 
+        altura_botao, 
+        "Iniciar jogo", 
+        al_map_rgb(250, 250, 250), // Cor padrão
+        al_map_rgb(0, 0, 0), // Cor do texto
+        false // Sem hover
+    );
+
+    // Botão "Fechar" com hover estilizado
+    desenharBotaoComEstilo(
+        x_botoes, 
+        y_botao_fechar, 
+        largura_botao, 
+        altura_botao, 
+        "Fechar", 
+        al_map_rgb(250, 250, 250), // Cor padrão
+        al_map_rgb(0, 0, 0), // Cor do texto
+        hover_fechar // Determina se o botão está em hover
+    );
 
     // Botão de música no canto inferior direito
     float largura_botao_musica = 64;
@@ -238,28 +279,50 @@ static void carregarMenuInicial() {
     // Desenhando o nome do usuário e o record:
 
         // Configurando as fontes:
-        fonte_rendereizacao_usuario = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 35, 0);
-        if (!fonte_rendereizacao_usuario) {
-            al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte geral", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
-            al_destroy_display(display);
-            return;
-        }
+            // Fonte para os campos chave:
+            fonte_rendereizacao_usuario = al_load_ttf_font("./fonts/roboto/Roboto-Bold.ttf", 35, 0);
+            if (!fonte_rendereizacao_usuario) {
+                al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte geral", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+                al_destroy_display(display);
+                return;
+            }
 
-        // Desenhando o nome do usuário e o record:
+            // fonte para os valores:
+            fonte_rendereizacao_valores_usuario = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 40, 0);
+            if (!fonte_rendereizacao_valores_usuario) {
+                al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a fonte geral", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+                al_destroy_display(display);
+                return;
+            }
+
+        // Nome do usuário e record
         char nome_usuario[128];
         obter_nome_usuario(nome_usuario, sizeof(nome_usuario));
         int record_usuario = obter_record_usuario();
-        char texto_usuario[256];
-        snprintf(texto_usuario, sizeof(texto_usuario), "Usuário: %s\nRecord: %d", nome_usuario, record_usuario);
-        float x_usuario = largura_janela - 700 - al_get_text_width(fonte_geral, texto_usuario);
-        float y_usuario = 575;
-        al_draw_multiline_text(fonte_rendereizacao_usuario, al_map_rgb(255, 255, 255), x_usuario, y_usuario, largura_janela - 20, altura_mensagem, ALLEGRO_ALIGN_RIGHT, texto_usuario);
+
+        // Posições fixas para os textos "Usuário:" e "Record:" no canto inferior esquerdo
+        float x_base = 20;               // Posição fixa no lado esquerdo
+        float y_usuario = altura_janela - 180; // Altura inicial para "Usuário:" (ajustado para ficar acima da borda inferior)
+        float espacamento = 50;          // Espaço entre as linhas
+
+        // Renderizar o texto "Usuário:"
+        al_draw_text(fonte_rendereizacao_usuario, al_map_rgb(255, 255, 255), x_base, y_usuario, ALLEGRO_ALIGN_LEFT, "Usuário:");
+
+        // Renderizar o nome do usuário logo após "Usuário:"
+        al_draw_text(fonte_rendereizacao_valores_usuario, al_map_rgb(255, 255, 255), x_base + 140, y_usuario - 5, ALLEGRO_ALIGN_LEFT, nome_usuario);
+
+        // Renderizar o texto "Record:"
+        al_draw_text(fonte_rendereizacao_usuario, al_map_rgb(255, 255, 255), x_base, y_usuario + espacamento, ALLEGRO_ALIGN_LEFT, "Record:");
+
+        // Renderizar o valor do record logo após "Record:"
+        char record_text[50];
+        snprintf(record_text, sizeof(record_text), "%d", record_usuario);
+        al_draw_text(fonte_rendereizacao_valores_usuario, al_map_rgb(255, 255, 255), x_base + 140, y_usuario + espacamento, ALLEGRO_ALIGN_LEFT, record_text);
 
     // Atualiza a tela:
     al_flip_display();
 
     // Loop principal do menu que espera por uma ação do usuário, seja ela iniciar o game, fechá-lo ou desativar e ativar música:
-    
     bool sair = false;
     bool iniciar_jogo = false;
     while (!sair) {
@@ -268,7 +331,8 @@ static void carregarMenuInicial() {
 
         if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
             sair = true;
-        } else if (evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+        }
+        else if (evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
             if (evento.mouse.x >= x_botoes && evento.mouse.x <= x_botoes + largura_botao) {
                 if (evento.mouse.y >= y_botao_fechar && evento.mouse.y <= y_botao_fechar + altura_botao) {
                     sair = true; // Fechar programa
@@ -287,8 +351,76 @@ static void carregarMenuInicial() {
                     al_flip_display();
                 }
             }
+        }  
+        else if (evento.type == ALLEGRO_EVENT_MOUSE_AXES) { // Movimento do mouse
+            hover_iniciar = (evento.mouse.x >= x_botoes && evento.mouse.x <= x_botoes + largura_botao &&
+                            evento.mouse.y >= y_botao_iniciar && evento.mouse.y <= y_botao_iniciar + altura_botao);
+            hover_fechar = (evento.mouse.x >= x_botoes && evento.mouse.x <= x_botoes + largura_botao &&
+                            evento.mouse.y >= y_botao_fechar && evento.mouse.y <= y_botao_fechar + altura_botao); 
         }
+    
+        // Atualizando tela com base no hoover:
+
+            // Fundo preto:
+            al_clear_to_color(al_map_rgb(0, 0, 0));
+
+            // Imagem de fundo:
+            if (imagem_fundo) {
+                al_draw_bitmap(imagem_fundo, 0, 0, 0);
+            }
+
+            // Botoes:
+            desenharBotaoComEstilo(x_botoes, y_botao_iniciar, largura_botao, altura_botao, "Iniciar jogo", al_map_rgb(100, 100, 100), al_map_rgb(255, 255, 255), hover_iniciar);
+            desenharBotaoComEstilo(x_botoes, y_botao_fechar, largura_botao, altura_botao, "Fechar", al_map_rgb(100,100,100), al_map_rgb(255, 255, 255), hover_fechar);
+
+            // Botão de musica:
+            desenhar_botao_musica(x_botao_musica, y_botao_musica, largura_botao_musica, altura_botao_musica);
+
+            // mensagem de boas vindas:
+            al_draw_text(fonte_mensagem_boas_vindas, al_map_rgb(255, 255, 255), x_mensagem , y_mensagem - 70, 0, mensagem);
+
+            // Redimensiona e desenha a imagem da nave ao lado do texto
+            if (imagem_nave) {
+                // Obtendo o tamanho da nave original:
+                int largura_original = al_get_bitmap_width(imagem_nave);
+                int altura_original = al_get_bitmap_height(imagem_nave);
+
+                // Redimensionando a nave:
+                ALLEGRO_BITMAP *nave_redimensionada = al_create_bitmap(largura_original / 2, altura_original / 2);
+                ALLEGRO_BITMAP *anterior = al_get_target_bitmap();
+                al_set_target_bitmap(nave_redimensionada);
+
+                // Desenha a imagem escalada
+                al_draw_scaled_bitmap(
+                    imagem_nave,
+                    0, 0, largura_original, altura_original, // Dimensões originais
+                    0, 0, (largura_original / 2) - 40, (altura_original / 2) - 40, // Dimensões reduzidas
+                    0
+                );
+
+                al_set_target_bitmap(anterior); 
+
+                // Desenha a nave redimensionada ao lado do texto
+                al_draw_bitmap(nave_redimensionada, x_mensagem + largura_mensagem + 25, y_mensagem - 60, 0);
+
+                // Libera o recurso
+                al_destroy_bitmap(nave_redimensionada);
+            }
+
+            // Nome do usuário e record:
+            al_draw_text(fonte_rendereizacao_usuario, al_map_rgb(255, 255, 255), x_base, y_usuario, ALLEGRO_ALIGN_LEFT, "Usuário:");
+            al_draw_text(fonte_rendereizacao_valores_usuario, al_map_rgb(255, 255, 255), x_base + 140, y_usuario - 5, ALLEGRO_ALIGN_LEFT, nome_usuario);
+            al_draw_text(fonte_rendereizacao_usuario, al_map_rgb(255, 255, 255), x_base, y_usuario + espacamento, ALLEGRO_ALIGN_LEFT, "Record:");
+            char record_text[50];
+            snprintf(record_text, sizeof(record_text), "%d", record_usuario);
+            al_draw_text(fonte_rendereizacao_valores_usuario, al_map_rgb(255, 255, 255), x_base + 140, y_usuario + espacamento, ALLEGRO_ALIGN_LEFT, record_text);
+
+            // Mostrando a tela:
+            al_flip_display();
     }
+
+
+
 
     // Ao fechar loop, libero os recursos usados:
     if (menu_de_musica) {
@@ -317,6 +449,9 @@ static void carregarMenuInicial() {
     }
     if (icone_musica_desligada) {
         al_destroy_bitmap(icone_musica_desligada);
+    }
+    if (fonte_rendereizacao_valores_usuario) {
+        al_destroy_font(fonte_rendereizacao_valores_usuario);
     }
     if (iniciar_jogo) {
         carregarTelaJogo(); // Alterna para a tela do jogo
