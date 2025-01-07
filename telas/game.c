@@ -36,6 +36,7 @@
 // Variáveis globais
 static ALLEGRO_SAMPLE *audio_disparo = NULL; 
 static ALLEGRO_SAMPLE *audio_game_over = NULL;
+static ALLEGRO_SAMPLE *audio_inimigo_abatido = NULL;
 static ALLEGRO_DISPLAY *display_game = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static ALLEGRO_BITMAP *imagem_nave = NULL;
@@ -156,6 +157,10 @@ static int pontuacao = 0;
                     al_play_sample(audio_game_over, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); 
                     
                     al_show_native_message_box(NULL, "Game Over", "Você foi atingido pelo inimigo!", "Clique em OK para reiniciar", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+                    
+                    // Salvar pontuação:
+                    salvar_record(pontuacao);
+                    
                     // Reiniciar o estado do jogo
                     quantidade_inimigos = 1; // Reinicia o número de inimigos
                     pontuacao = 0;          // Zera a pontuação
@@ -187,6 +192,36 @@ static int pontuacao = 0;
             }
         }
     }
+
+    // Função para verificar colisão entre tiro e inimigo:
+    void verificar_colisao_tiros_inimigos(float largura_tiro, float altura_tiro, float largura_inimigo, float altura_inimigo) {
+        for (int i = 0; i < MAX_TIROS; i++) {
+            if (tiros[i].ativo) {
+                for (int j = 0; j < MAX_INIMIGOS; j++) {
+                    if (inimigos[j].ativo) {
+                        // Verifica colisão entre tiro e inimigo
+                        if (fabs(tiros[i].x - inimigos[j].x) < largura_inimigo &&
+                            fabs(tiros[i].y - inimigos[j].y) < altura_inimigo) {
+                            // Desativa o inimigo e o tiro
+                            inimigos[j].ativo = false;
+                            tiros[i].ativo = false;
+
+                            // Toca o som de explosão
+                            if (audio_inimigo_abatido) {
+                                al_play_sample(audio_inimigo_abatido, 1.0, 0.0, 2.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                            }
+
+                            // Incrementa a pontuação
+                            pontuacao += 5;
+
+                            break; // Sai do loop de inimigos
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
 // Função principal da tela de jogo
 void carregarTelaJogo() {
@@ -225,6 +260,13 @@ void carregarTelaJogo() {
         al_show_native_message_box(NULL, "Erro", "Não foi possível carregar o áudio de disparo", " ", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return;
     }
+    
+    // Carregar áudio de explosão do inimigo:
+    audio_inimigo_abatido = al_load_sample("/home/luisfl/Documentos/prog/space_battle/audio/flagdrop.wav");
+    if (!audio_inimigo_abatido) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar o áudio de explosão do inimigo", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        exit(1);
+    }
 
     // Criação da janela do jogo
     display_game = al_create_display(LARGURA_TELA, ALTURA_TELA);
@@ -253,6 +295,7 @@ void carregarTelaJogo() {
 
     // Inicializando inimigos:
     inicializar_inimigos();
+
 
     // Redimensiona a nave para um tamanho proporcional:
     float largura_nave = LARGURA_TELA * 0.1; // 10% da largura da tela
@@ -354,6 +397,8 @@ void carregarTelaJogo() {
         // Movimento dos inimigos
         mover_inimigos(posicao_x_nave, posicao_y_nave, largura_nave / 2, altura_nave / 2);
 
+        // Verifica colisão dos tiros com os inimigos:
+        verificar_colisao_tiros_inimigos(5, 5, largura_nave / 2, altura_nave / 2); // Ajuste os tamanhos conforme necessário
 
         // Atualiza a posição e ângulo da nave
         if (tecla_cima) {
@@ -467,6 +512,9 @@ void carregarTelaJogo() {
     }
     if(audio_game_over){
         al_destroy_sample(audio_game_over);
+    }
+    if(audio_inimigo_abatido){
+        al_destroy_sample(audio_inimigo_abatido);
     }
 
     al_destroy_event_queue(fila_eventos); // Destruindo fila de eventos.
