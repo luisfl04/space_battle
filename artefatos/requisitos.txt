@@ -17,7 +17,7 @@ Anotações de requisitos que o game precisa cumprir:
     - Audio de disparo -> Ok
     - Implementar lógica que carregue o record e salve -> OK
     - Lógica que faça com que o valor do record não seja perdido no momento em que o game for pausado(O estado do jogo deve ser o mesmo) -> Ok
-    - Implementar adversários que se renderizam de acordo com o tempo e tentam atirar na nave -> 
+    - Implementar adversários que se renderizam de acordo com o tempo e tentam atirar na nave -> Ok
 
 
 * Apresentação:

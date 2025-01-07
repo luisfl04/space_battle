@@ -301,7 +301,6 @@ static int altura_quadro = 0;
         }
     }
   
-
 // Função principal da tela de jogo
 void carregarTelaJogo() {
     // Inicialização do Allegro

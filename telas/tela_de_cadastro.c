@@ -4,6 +4,8 @@
 #include <allegro5/allegro_primitives.h>
 #include <string.h>
 #include <stdio.h>
+#include <allegro5/allegro_native_dialog.h>
+#include <allegro5/allegro_image.h>
 
 #define SCREEN_WIDTH 1366
 #define SCREEN_HEIGHT 768
@@ -29,6 +31,7 @@ int iniciarTelaDeCadastro() {
     al_init_ttf_addon();
     al_init_primitives_addon();
     al_install_keyboard();
+    al_init_image_addon();
 
     // Configurações iniciais
     ALLEGRO_DISPLAY *display = al_create_display(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -40,12 +43,18 @@ int iniciarTelaDeCadastro() {
 
     // Criando a fila de eventos e definindo a fonte:
     ALLEGRO_EVENT_QUEUE *event_queue = al_create_event_queue();
-    ALLEGRO_FONT *font = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 32, 0);
+    ALLEGRO_FONT *font = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 48, 0);
 
     // Verificando inicalização da fonte e da fila de eventos:
     if (!event_queue || !font) {
         fprintf(stderr, "Falha ao carregar recursos.\n");
         return -1;
+    }
+
+    // Prepara o fundo e carrega a imagem com estrelas sobre o fundo:
+    ALLEGRO_BITMAP *imagem_fundo = al_load_bitmap("./imagens/fundo.png");
+    if (!imagem_fundo) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem de fundo", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
     }
 
     // Registrando eventos:
@@ -87,14 +96,15 @@ int iniciarTelaDeCadastro() {
             running = false; // Encerra o loop da tela de login
         }
 
-        // Renderização
-        al_clear_to_color(al_map_rgb(200, 200, 200)); 
+        //Renderização:
+        al_clear_to_color(al_map_rgb(0, 0, 0));
+        al_draw_bitmap(imagem_fundo, 0, 0, 0);
 
-        al_draw_text(font, al_map_rgb(10, 10, 10), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4,
+        al_draw_text(font, al_map_rgb(200, 200, 200), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4,
                      ALLEGRO_ALIGN_CENTER, "Insira um username:");
-        al_draw_rectangle(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2 - 20, SCREEN_WIDTH * 3 / 4, SCREEN_HEIGHT / 2 + 20,
-                          al_map_rgb(0, 0, 0), 2);
-        al_draw_text(font, al_map_rgb(10, 10, 10), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 16,
+        al_draw_rectangle(SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2 - 30, SCREEN_WIDTH * 3 / 4, SCREEN_HEIGHT / 2 + 36,
+                          al_map_rgb(200, 200, 200), 2);
+        al_draw_text(font, al_map_rgb(200, 200, 200), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 16,
                      ALLEGRO_ALIGN_CENTER, username);
 
         al_flip_display();
@@ -104,6 +114,7 @@ int iniciarTelaDeCadastro() {
     al_destroy_font(font);
     al_destroy_event_queue(event_queue);
     al_destroy_display(display);
+    al_destroy_bitmap(imagem_fundo);
 
     return 0;
 }
