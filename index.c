@@ -11,10 +11,5 @@ int main(int argc, char **argv){
     // Ao obter o username, incio o menu inicial:
     carregarMenuInicial();
 
-
-
-
-
-
     return 0;
 }

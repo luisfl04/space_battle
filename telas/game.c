@@ -303,6 +303,8 @@ static int altura_quadro = 0;
   
 // Função principal da tela de jogo
 void carregarTelaJogo() {
+    printf("Carregando tela de jogo...\n");
+
     // Inicialização do Allegro
     if (!al_init()) {
         al_show_native_message_box(NULL, "Erro", "Não foi possível inicializar o Allegro", " ", NULL, ALLEGRO_MESSAGEBOX_ERROR);
@@ -378,10 +380,8 @@ void carregarTelaJogo() {
         exit(1);
     }
 
-
     // Inicializando inimigos:
     inicializar_inimigos();
-
 
     // Redimensiona a nave para um tamanho proporcional:
     float largura_nave = LARGURA_TELA * 0.1; // 10% da largura da tela
@@ -426,7 +426,7 @@ void carregarTelaJogo() {
                 sair = true;
             } else if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
                 if (evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
-                    sair = true; // Retornar ao menu
+                    sair = true; // Retornar ao menu inicial
                 } else if (evento.keyboard.keycode == ALLEGRO_KEY_P) {
                     pausado = !pausado; // Alterna entre pausado e em execução
                 } else if (!pausado) { // Somente processa controles se não estiver pausado
@@ -614,4 +614,5 @@ void carregarTelaJogo() {
     }
 
     al_destroy_event_queue(fila_eventos); // Destruindo fila de eventos.
+    sair = false;
 }

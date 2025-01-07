@@ -419,9 +419,6 @@ static void carregarMenuInicial() {
             al_flip_display();
     }
 
-
-
-
     // Ao fechar loop, libero os recursos usados:
     if (menu_de_musica) {
         al_destroy_sample(menu_de_musica);
