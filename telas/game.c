@@ -17,6 +17,7 @@
 #define MAX_TIROS 10
 #define LARGURA_TELA 1366
 #define ALTURA_TELA 768
+#define MAX_ANIMACOES 10
 
 // Estruturas usadas:
     // Estrutura para um inimigo:
@@ -32,6 +33,16 @@
         float dx, dy; // Direção do movimento
         bool ativo;
     } Tiro;
+
+    // Estrutura para animações:
+    typedef struct {
+        float x, y;             // Posição da explosão
+        int quadro_atual;       // Quadro atual da animação
+        int total_quadros;      // Total de quadros na animação
+        float tempo_por_quadro; // Tempo entre quadros
+        float tempo_acumulado;  // Tempo acumulado para controle de quadros
+        bool ativo;             // Estado da animação
+    } Animacao;
 
 // Variáveis globais
 static ALLEGRO_SAMPLE *audio_disparo = NULL; 
@@ -51,7 +62,10 @@ static bool sair = false;
 static bool pausado = false;
 static int pontuacao = 0;
 static float velocidade_inimigos = 2.0; // Velocidade inicial
-
+static Animacao explosoes[MAX_ANIMACOES];
+static ALLEGRO_BITMAP *spritesheet_explosao = NULL;
+static int largura_quadro = 0;
+static int altura_quadro = 0;
 
 // Configurações gerais:
 
@@ -134,6 +148,22 @@ static float velocidade_inimigos = 2.0; // Velocidade inicial
         quantidade_inimigos++; // Incrementa a quantidade de inimigos para a próxima onda
     }
 
+    // Função que cria animação de explosão quando um inimigo é atingido:
+    void criar_explosao(float x, float y, int largura_quadro, int altura_quadro) {
+        for (int i = 0; i < MAX_ANIMACOES; i++) {
+            if (!explosoes[i].ativo) {
+                explosoes[i].x = x - largura_quadro / 2; // Centraliza a explosão
+                explosoes[i].y = y - altura_quadro / 2; // Centraliza a explosão
+                explosoes[i].quadro_atual = 0;
+                explosoes[i].total_quadros = 64; // Quantidade total de quadros (8x8 na imagem)
+                explosoes[i].tempo_por_quadro = 0.05; // 50ms por quadro
+                explosoes[i].tempo_acumulado = 0;
+                explosoes[i].ativo = true;
+                break;
+            }
+        }
+    }
+
     // Função para mover inimigos em direção à nave:
     void mover_inimigos(float posicao_x_nave, float posicao_y_nave, float largura_inimigo, float altura_inimigo) {
         for (int i = 0; i < MAX_INIMIGOS; i++) {
@@ -155,6 +185,9 @@ static float velocidade_inimigos = 2.0; // Velocidade inicial
                 if (fabs(inimigos[i].x - posicao_x_nave) < largura_inimigo &&
                     fabs(inimigos[i].y - posicao_y_nave) < altura_inimigo) {
 
+                    // Cria a explosão:
+                    criar_explosao(posicao_x_nave, posicao_y_nave, largura_quadro, altura_quadro);
+                    
                     // Tocar audio de game over:
                     audio_game_over = al_load_sample("./audio/game_over.wav");
                     al_play_sample(audio_game_over, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); 
@@ -197,6 +230,7 @@ static float velocidade_inimigos = 2.0; // Velocidade inicial
         }
     }
 
+
     // Função para verificar colisão entre tiro e inimigo:
     void verificar_colisao_tiros_inimigos(float largura_tiro, float altura_tiro, float largura_inimigo, float altura_inimigo) {
         for (int i = 0; i < MAX_TIROS; i++) {
@@ -226,6 +260,47 @@ static float velocidade_inimigos = 2.0; // Velocidade inicial
         }
     }
 
+
+    // Atualização dos frames relacionados a explosão do inimigo atingido: 
+    void atualizar_explosoes(float delta_tempo) {
+        for (int i = 0; i < MAX_ANIMACOES; i++) {
+            if (explosoes[i].ativo) {
+                explosoes[i].tempo_acumulado += delta_tempo;
+                if (explosoes[i].tempo_acumulado >= explosoes[i].tempo_por_quadro) {
+                    explosoes[i].quadro_atual++;
+                    explosoes[i].tempo_acumulado = 0;
+
+                    // Finaliza a animação quando todos os quadros forem exibidos
+                    if (explosoes[i].quadro_atual >= explosoes[i].total_quadros) {
+                        explosoes[i].ativo = false;
+                    }
+                }
+            }
+        }
+    }
+
+    // Renderiza a explosão do inimigo atingido::
+    void renderizar_explosoes() {
+        int colunas = 8; // Número de colunas no spritesheet
+        int linhas = 8;  // Número de linhas no spritesheet
+        largura_quadro = al_get_bitmap_width(spritesheet_explosao) / colunas;
+        altura_quadro = al_get_bitmap_height(spritesheet_explosao) / linhas;
+
+        for (int i = 0; i < MAX_ANIMACOES; i++) {
+            if (explosoes[i].ativo) {
+                int coluna = explosoes[i].quadro_atual % colunas;
+                int linha = explosoes[i].quadro_atual / colunas;
+
+                al_draw_bitmap_region(
+                    spritesheet_explosao,
+                    coluna * largura_quadro, linha * altura_quadro, largura_quadro, altura_quadro,
+                    explosoes[i].x, explosoes[i].y, // Posiciona no centro do local
+                    0
+                );
+            }
+        }
+    }
+  
 
 // Função principal da tela de jogo
 void carregarTelaJogo() {
@@ -296,6 +371,14 @@ void carregarTelaJogo() {
         al_destroy_bitmap(imagem_fundo);
         return;
     }
+
+    // Imagem da animação de explosão:
+    spritesheet_explosao = al_load_bitmap("./imagens/game/animacao_explosao.png");
+    if (!spritesheet_explosao) {
+        al_show_native_message_box(NULL, "Erro", "Não foi possível carregar o spritesheet de explosão", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        exit(1);
+    }
+
 
     // Inicializando inimigos:
     inicializar_inimigos();
@@ -488,7 +571,10 @@ void carregarTelaJogo() {
                 al_draw_filled_circle(tiros[i].x, tiros[i].y, 5, al_map_rgb(255, 255, 0));
             }
         }
-        
+
+        // Renderiza e atualiza renderização de animação de explosões:
+        atualizar_explosoes(0.016);
+        renderizar_explosoes();
 
         // Atualizando tela:
         al_flip_display();  
