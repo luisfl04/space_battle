@@ -35,6 +35,7 @@
 
 // Variáveis globais
 static ALLEGRO_SAMPLE *audio_disparo = NULL; 
+static ALLEGRO_SAMPLE *audio_game_over = NULL;
 static ALLEGRO_DISPLAY *display_game = NULL;
 static ALLEGRO_BITMAP *imagem_fundo = NULL;
 static ALLEGRO_BITMAP *imagem_nave = NULL;
@@ -129,7 +130,7 @@ static int pontuacao = 0;
         quantidade_inimigos++; // Incrementa a quantidade de inimigos para a próxima onda
     }
 
-    // Função para mover inimigos em direção à nave
+    // Função para mover inimigos em direção à nave:
     void mover_inimigos(float posicao_x_nave, float posicao_y_nave, float largura_inimigo, float altura_inimigo) {
         for (int i = 0; i < MAX_INIMIGOS; i++) {
             if (inimigos[i].ativo) {
@@ -149,12 +150,32 @@ static int pontuacao = 0;
                 // Verifica colisão com a nave
                 if (fabs(inimigos[i].x - posicao_x_nave) < largura_inimigo &&
                     fabs(inimigos[i].y - posicao_y_nave) < altura_inimigo) {
-                    printf("Colisão com inimigo! Fim de jogo.\n");
-                    sair = true;
+
+                    // Tocar audio de game over:
+                    audio_game_over = al_load_sample("./audio/game_over.wav");
+                    al_play_sample(audio_game_over, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); 
+                    
+                    al_show_native_message_box(NULL, "Game Over", "Você foi atingido pelo inimigo!", "Clique em OK para reiniciar", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+                    // Reiniciar o estado do jogo
+                    quantidade_inimigos = 1; // Reinicia o número de inimigos
+                    pontuacao = 0;          // Zera a pontuação
+
+                    // Reposiciona a nave no centro
+                    posicao_x_nave = LARGURA_TELA / 2;
+                    posicao_y_nave = ALTURA_TELA / 2;
+
+                    // Desativa todos os inimigos
+                    for (int j = 0; j < MAX_INIMIGOS; j++) {
+                        inimigos[j].ativo = false;
+                    }
+
+                    // Reinicializa o game:
+                    return;
                 }
             }
         }
     }
+
 
     // Função para renderizar os inimigos
     void renderizar_inimigos(float largura_inimigo, float altura_inimigo) {
@@ -431,6 +452,21 @@ void carregarTelaJogo() {
     }
     if (display_game) {
         al_destroy_display(display_game);
+    }
+    if (nave_redimensionada) {
+        al_destroy_bitmap(nave_redimensionada);
+    }
+    if(imagem_fundo_pause){
+        al_destroy_bitmap(imagem_fundo_pause);
+    }
+    if(imagem_inimigo){
+        al_destroy_bitmap(imagem_inimigo);
+    }
+    if(audio_disparo){
+        al_destroy_sample(audio_disparo);
+    }
+    if(audio_game_over){
+        al_destroy_sample(audio_game_over);
     }
 
     al_destroy_event_queue(fila_eventos); // Destruindo fila de eventos.
