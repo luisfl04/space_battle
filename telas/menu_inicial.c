@@ -155,8 +155,6 @@ static void carregarMenuInicial() {
         al_show_native_message_box(NULL, "Erro", "Não foi possível carregar os ícones do botão de musica", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
     }
 
-
-
     // Prepara o fundo e carrega a imagem com estrelas sobre o fundo:
     al_clear_to_color(al_map_rgb(0, 0, 0));
     imagem_fundo = al_load_bitmap("./imagens/menu_inicial/fundo_estrelas_menu_inicial.png");
@@ -186,7 +184,7 @@ static void carregarMenuInicial() {
     // Desenhando mensagem de boas vindas:
         
         // Carregando a imagem da nave que é renderizada ao lado da mensagem de boas vindas:
-        imagem_nave = al_load_bitmap("./imagens/menu_inicial/destroyer.png");
+        imagem_nave = al_load_bitmap("./imagens/game/nave_game.png");
         if (!imagem_nave) {
             al_show_native_message_box(NULL, "Erro", "Não foi possível carregar a imagem da nave", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         }
@@ -211,12 +209,29 @@ static void carregarMenuInicial() {
 
         // Redimensiona e desenha a imagem da nave ao lado do texto
         if (imagem_nave) {
-            ALLEGRO_BITMAP *nave_redimensionada = al_create_bitmap(altura_mensagem, altura_mensagem);
+            // Obtendo o tamanho da nave original:
+            int largura_original = al_get_bitmap_width(imagem_nave);
+            int altura_original = al_get_bitmap_height(imagem_nave);
+
+            // Redimensionando a nave:
+            ALLEGRO_BITMAP *nave_redimensionada = al_create_bitmap(largura_original / 2, altura_original / 2);
             ALLEGRO_BITMAP *anterior = al_get_target_bitmap();
             al_set_target_bitmap(nave_redimensionada);
-            al_draw_scaled_bitmap(imagem_nave, 0, 0, al_get_bitmap_width(imagem_nave), al_get_bitmap_height(imagem_nave), 0, 0, altura_mensagem, altura_mensagem, 0);
+
+            // Desenha a imagem escalada
+            al_draw_scaled_bitmap(
+                imagem_nave,
+                0, 0, largura_original, altura_original, // Dimensões originais
+                0, 0, (largura_original / 2) - 40, (altura_original / 2) - 40, // Dimensões reduzidas
+                0
+            );
+
             al_set_target_bitmap(anterior);
-            al_draw_bitmap(nave_redimensionada, x_mensagem + largura_mensagem + 20, y_mensagem, 0);
+
+            // Desenha a nave redimensionada ao lado do texto
+            al_draw_bitmap(nave_redimensionada, x_mensagem + largura_mensagem + 25, y_mensagem - 60, 0);
+
+            // Libera o recurso
             al_destroy_bitmap(nave_redimensionada);
         }
 

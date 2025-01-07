@@ -43,7 +43,7 @@ int iniciarTelaDeCadastro() {
 
     // Criando a fila de eventos e definindo a fonte:
     ALLEGRO_EVENT_QUEUE *event_queue = al_create_event_queue();
-    ALLEGRO_FONT *font = al_load_ttf_font("./fonts/roboto/Roboto-Regular.ttf", 48, 0);
+    ALLEGRO_FONT *font = al_load_ttf_font("./fonts/roboto/Roboto-Bold.ttf", 48, 0);
 
     // Verificando inicalização da fonte e da fila de eventos:
     if (!event_queue || !font) {
