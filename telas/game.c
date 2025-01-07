@@ -50,6 +50,8 @@ static int quantidade_inimigos = 1;
 static bool sair = false;
 static bool pausado = false;
 static int pontuacao = 0;
+static float velocidade_inimigos = 2.0; // Velocidade inicial
+
 
 // Configurações gerais:
 
@@ -121,7 +123,7 @@ static int pontuacao = 0;
         for (int i = 0; i < quantidade_inimigos && i < MAX_INIMIGOS; i++) {
             if (!inimigos[i].ativo) {
                 inimigos[i].x = rand() % LARGURA_TELA; // Posição aleatória no eixo X
-                inimigos[i].y = rand() % ALTURA_TELA; // Posição aleatória no eixo Y
+                inimigos[i].y = 0; // Sempre no topo da tela.
                 inimigos[i].ativo = true;
 
                 // Define a velocidade inicial
@@ -142,8 +144,8 @@ static int pontuacao = 0;
 
                 // Normaliza a direção e define velocidade
                 if (magnitude > 0) {
-                    inimigos[i].dx = (direcao_x / magnitude) * 2; // Velocidade fixa de 2
-                    inimigos[i].dy = (direcao_y / magnitude) * 2;
+                    inimigos[i].dx = (direcao_x / magnitude) * velocidade_inimigos; // Velocidade fixa de 2
+                    inimigos[i].dy = (direcao_y / magnitude) * velocidade_inimigos;
                 }
 
                 inimigos[i].x += inimigos[i].dx;
@@ -165,6 +167,7 @@ static int pontuacao = 0;
                     // Reiniciar o estado do jogo
                     quantidade_inimigos = 1; // Reinicia o número de inimigos
                     pontuacao = 0;          // Zera a pontuação
+                    velocidade_inimigos = 2.0; // Volta a velocidade inicial.
 
                     // Reposiciona a nave no centro
                     posicao_x_nave = LARGURA_TELA / 2;
@@ -263,7 +266,7 @@ void carregarTelaJogo() {
     }
     
     // Carregar áudio de explosão do inimigo:
-    audio_inimigo_abatido = al_load_sample("/home/luisfl/Documentos/prog/space_battle/audio/flagdrop.wav");
+    audio_inimigo_abatido = al_load_sample("/home/luisfl/Documentos/prog/space_battle/audio/inimigo_abatido.wav");
     if (!audio_inimigo_abatido) {
         al_show_native_message_box(NULL, "Erro", "Não foi possível carregar o áudio de explosão do inimigo", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         exit(1);
@@ -331,6 +334,7 @@ void carregarTelaJogo() {
     tempo_inicial = time(NULL);
     time_t ultimo_tempo = tempo_inicial;
     time_t tempo_ultimo_inimigo = time(NULL);
+    time_t ultimo_incremento_velocidade = time(NULL);
 
     // Modificar o controle das teclas no loop de eventos
     while (!sair) {
@@ -400,6 +404,12 @@ void carregarTelaJogo() {
 
         // Verifica colisão dos tiros com os inimigos:
         verificar_colisao_tiros_inimigos(5, 5, largura_nave / 2, altura_nave / 2); // Ajuste os tamanhos conforme necessário
+
+        // Incrementando velocidade do inimigo:
+        if (difftime(time(NULL), ultimo_incremento_velocidade) >= 10) { // Incrementa a cada 10 segundos
+            velocidade_inimigos += 0.2; // Incremento mínimo na velocidade
+            ultimo_incremento_velocidade = time(NULL);
+        }
 
         // Atualiza a posição e ângulo da nave
         if (tecla_cima) {
