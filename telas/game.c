@@ -342,7 +342,7 @@ void carregarTelaJogo() {
     }
     
     // Carregar áudio de explosão do inimigo:
-    audio_inimigo_abatido = al_load_sample("/home/luisfl/Documentos/prog/space_battle/audio/inimigo_abatido.wav");
+    audio_inimigo_abatido = al_load_sample("./audio/inimigo_abatido.wav");
     if (!audio_inimigo_abatido) {
         al_show_native_message_box(NULL, "Erro", "Não foi possível carregar o áudio de explosão do inimigo", "", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         exit(1);
