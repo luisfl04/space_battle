@@ -6,7 +6,7 @@
 
 ### Use o comando abaixo para compilar o jogo:
 
-`gcc -o SpaceBattle index.c ./telas/game.c -lallegro -lallegro_font -lallegro_ttf -lallegro_primitives -lallegro_audio -lallegro_acodec -lallegro_dialog -lallegro_image -lm `
+`gcc -o SpaceBattle index.c ./telas/game.c ./telas/menu_inicial.c -lallegro -lallegro_font -lallegro_ttf -lallegro_primitives -lallegro_audio -lallegro_acodec -lallegro_dialog -lallegro_image -lm `
 
 ### Certifique-se de que você possui todas as dependências da biblioteca Allegro instaladas no seu sistema.
 
