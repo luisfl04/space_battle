@@ -53,10 +53,6 @@
 
 ![tela do game](./artefatos/imagens/game.png)
 
-### Loop de eventos principal do game:
-
-![loop principal](./artefatos/imagens/funcao_principal.png)
-
 ## Considerações gerais:
 
 ### Fique a vontade para abrir issues ou sugerir melhorias!
