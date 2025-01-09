@@ -32,6 +32,12 @@
 ## Funcionamento Geral do Jogo:
 ### 1 - Este é um jogo onde o jogador controla uma nave e deve evitar ser atingido pelos inimigos que aparecem no jogo. A dificuldade aumenta progressivamente conforme o tempo, com mais inimigos surgindo e movendo-se mais rápido.
 
+### 2 - Teclas usadas no game:
+- As setas do teclado são usadas para a movimentação da nave.
+- A teclas `P` faz o jogo pausar e iniciar novamente
+- A tecla `espaço` do teclado é usada para acionar os tiros da nave
+- No game, ao teclar `esc` o usuário é redirecionado ao menu inicial.
+
 ## Funcionalidades:
 ### 1 - Menu Inicial:
 
