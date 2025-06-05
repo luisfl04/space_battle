@@ -20,7 +20,10 @@
 #### Em um terminal linux(Ubuntu/Debian) use -> `sudo apt-get update && sudo apt-get install liballegro5-dev`
 #### Em um sistema windows -> [Acesse este link](https://www.nuget.org/api/v2/package/Allegro/5.2.10) para baixar.
 
-### 2 - No repósitorio do game, use o comando abaixo para compilar o jogo:
+### 2 - Tenha o compilador **GCC** para fazer a compilação do código fonte:
+#### Acesse [este artigo](https://www.alura.com.br/artigos/compilando-executando-programas-c-c-windows?srsltid=AfmBOooPrL_e2Opiroz8XDEuVCR5q2KAPc_9m9ZCqYVUj90G45Orlp6F) com intruções de como instalá-lo.
+
+### 3 - No repósitorio raiz do game, use o comando abaixo para compilar o jogo:
 `gcc -o SpaceBattle index.c ./telas/game.c ./telas/menu_inicial.c -lallegro -lallegro_font -lallegro_ttf -lallegro_primitives -lallegro_audio -lallegro_acodec -lallegro_dialog -lallegro_image -lm `
 
 ### 3 - Um execultável com o nome `SpaceBattle` será criado. Use `./SpaceBattle` para execultar o programa no seu terminal ou acesse com dois cliques no explorador de arquivos do seu sistema operacional.
